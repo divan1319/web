@@ -1,0 +1,2557 @@
+{
+  "lessons": [
+    {
+      "id": "clase-01",
+      "number": 1,
+      "title": "Mapa de .NET y anatomía de un proyecto",
+      "module": "I · Lenguaje y plataforma",
+      "duration": 35,
+      "level": "Inicial",
+      "lead": "Comprendé la plataforma antes de escribir lógica: SDK, runtime, paquetes, solución y punto de entrada.",
+      "outcomes": [
+        "Distinguir C#, .NET y ASP.NET Core",
+        "Identificar los archivos que importan",
+        "Ejecutar y compilar una Web API"
+      ],
+      "sections": [
+        {
+          "heading": "La plataforma",
+          "explanation": "C# es el lenguaje; .NET incluye runtime, bibliotecas y SDK; ASP.NET Core proporciona el pipeline HTTP. No es lo mismo compilar que ejecutar. Elegimos .NET 10 LTS para mantener una línea estable.",
+          "code": "dotnet --info\ndotnet new webapi -n Tickets.Api --use-controllers -f net10.0\ncd Tickets.Api\ndotnet run",
+          "language": "bash",
+          "insight": ""
+        },
+        {
+          "heading": "Archivos fundamentales",
+          "explanation": "Un .csproj declara el framework y las dependencias. Program.cs compone servicios y middleware. appsettings.json contiene configuración no secreta. Properties/launchSettings.json aplica a la ejecución local.",
+          "code": "<Project Sdk=\"Microsoft.NET.Sdk.Web\">\n  <PropertyGroup>\n    <TargetFramework>net10.0</TargetFramework>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>enable</ImplicitUsings>\n  </PropertyGroup>\n</Project>",
+          "language": "xml",
+          "insight": ""
+        },
+        {
+          "heading": "Compilar y publicar",
+          "explanation": "dotnet restore recupera NuGet; build compila; run inicia; publish genera artefactos de distribución. bin/ y obj/ son salidas generadas y normalmente no se versionan.",
+          "code": "dotnet restore\ndotnet build\ndotnet run\ndotnet publish -c Release -o ./publish",
+          "language": "bash",
+          "insight": "A diferencia de vendor/ de Composer, los paquetes NuGet suelen vivir en una caché global."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Inspeccioná el archivo .csproj de la API",
+          "Ubicá el punto de entrada y las configuraciones",
+          "Ejecutá build e identificá los directorios generados"
+        ],
+        "solution": "dotnet --info\ndotnet build backend/Tickets.Api/Tickets.Api.csproj\n# Revisá Program.cs, appsettings.json y Tickets.Api.csproj.",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c01-p1",
+          "prompt": "¿Qué archivo declara el framework de destino?",
+          "options": [
+            "Program.cs",
+            "*.csproj",
+            "appsettings.json",
+            "launchSettings.json"
+          ],
+          "correct": 1,
+          "why": "TargetFramework y PackageReference se definen en el proyecto .csproj."
+        },
+        {
+          "id": "c01-p2",
+          "prompt": "¿Qué comando genera una compilación sin iniciar Kestrel?",
+          "options": [
+            "dotnet run",
+            "dotnet restore",
+            "dotnet build",
+            "dotnet watch"
+          ],
+          "correct": 2,
+          "why": "dotnet build compila sin levantar el servidor HTTP."
+        },
+        {
+          "id": "c01-p3",
+          "prompt": "¿Cuál afirmación sobre ASP.NET Core es correcta?",
+          "options": [
+            "Es un lenguaje",
+            "Es un proveedor SQL",
+            "Es un framework web sobre .NET",
+            "Reemplaza al runtime"
+          ],
+          "correct": 2,
+          "why": "ASP.NET Core implementa aplicaciones web sobre .NET."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Documentación .NET",
+          "url": "https://learn.microsoft.com/dotnet/"
+        },
+        {
+          "label": "ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/"
+        }
+      ]
+    },
+    {
+      "id": "clase-02",
+      "number": 2,
+      "title": "C# moderno: tipos, nulabilidad y records",
+      "module": "I · Lenguaje y plataforma",
+      "duration": 35,
+      "level": "Inicial",
+      "lead": "Repasá C# sin arrastrar hábitos de PHP: el tipo se determina en compilación y la nulabilidad importa.",
+      "outcomes": [
+        "Usar var y tipos explícitos",
+        "Comprender nullable reference types",
+        "Elegir entre class y record"
+      ],
+      "sections": [
+        {
+          "heading": "Tipos y var",
+          "explanation": "var infiere un tipo estático; no equivale a dynamic. Con nullable enable, string? puede contener null y string no debería hacerlo.",
+          "code": "var id = 42;                // int\nstring titulo = \"Incidencia\";\nstring? comentario = null;\nbool resuelto = false;",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Clases y records",
+          "explanation": "Una class es apropiada para entidades con identidad y estado mutable. Un record posicional resulta útil para valores y DTOs; with crea una copia superficial.",
+          "code": "public record TicketResponse(int Id, string Titulo, bool Resuelto);\n\nvar original = new TicketResponse(1, \"Error\", false);\nvar copia = original with { Resuelto = true };",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Pattern matching",
+          "explanation": "is, switch y patrones relacionales reducen condiciones repetitivas cuando su significado es claro.",
+          "code": "static string Etiqueta(int prioridad) => prioridad switch\n{\n    >= 8 => \"Crítica\",\n    >= 5 => \"Alta\",\n    _ => \"Normal\"\n};",
+          "language": "csharp",
+          "insight": "No usés ! (null-forgiving) para ocultar advertencias sin entender por qué el dato puede ser nulo."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Creá un record TicketResponse y una instancia",
+          "Usá with para cambiar el estado sin alterar el original",
+          "Escribí un switch para mapear niveles de prioridad"
+        ],
+        "solution": "public record TicketResponse(int Id, string Titulo, bool Resuelto);\nvar t1 = new TicketResponse(1, \"Pago\", false);\nvar t2 = t1 with { Resuelto = true };\nConsole.WriteLine(t1.Resuelto); // false",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c02-p1",
+          "prompt": "¿Qué tipo infiere C# para var n = 10?",
+          "options": [
+            "dynamic",
+            "object",
+            "int",
+            "long"
+          ],
+          "correct": 2,
+          "why": "var infiere el tipo int en tiempo de compilación."
+        },
+        {
+          "id": "c02-p2",
+          "prompt": "¿Qué hace with sobre un record posicional?",
+          "options": [
+            "Muta el objeto original",
+            "Crea una copia",
+            "Persiste a PostgreSQL",
+            "Recompila la clase"
+          ],
+          "correct": 1,
+          "why": "With crea una nueva instancia superficialmente copiada."
+        },
+        {
+          "id": "c02-p3",
+          "prompt": "¿Qué expresa string? con nullable habilitado?",
+          "options": [
+            "Solo texto vacío",
+            "Puede ser null",
+            "Texto cifrado",
+            "Tipo dinámico"
+          ],
+          "correct": 1,
+          "why": "El ? declara la posibilidad de null para el análisis del compilador."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Guía de C#",
+          "url": "https://learn.microsoft.com/dotnet/csharp/"
+        }
+      ]
+    },
+    {
+      "id": "clase-03",
+      "number": 3,
+      "title": "Interfaces, constructores e inyección de dependencias",
+      "module": "I · Lenguaje y plataforma",
+      "duration": 35,
+      "level": "Inicial",
+      "lead": "Aprendé a separar contratos de implementaciones sin crear abstracciones vacías.",
+      "outcomes": [
+        "Implementar interfaces",
+        "Usar constructor primario",
+        "Elegir ciclo de vida de servicios"
+      ],
+      "sections": [
+        {
+          "heading": "Contrato e implementación",
+          "explanation": "Una interfaz describe operaciones; una clase decide cómo realizarlas. Depender de contratos puede facilitar pruebas y sustituciones, aunque una interfaz por clase no es una obligación.",
+          "code": "public interface ITicketService\n{\n    Task<Ticket?> ObtenerAsync(int id, CancellationToken ct);\n}\n\npublic class TicketService(AppDbContext db) : ITicketService\n{\n    public Task<Ticket?> ObtenerAsync(int id, CancellationToken ct)\n        => db.Tickets.FirstOrDefaultAsync(x => x.Id == id, ct);\n}",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Contenedor DI",
+          "explanation": "ASP.NET Core registra implementaciones y resuelve parámetros del constructor. Scoped es lo usual con DbContext; Singleton vive durante la aplicación; Transient crea instancias por resolución.",
+          "code": "builder.Services.AddScoped<ITicketService, TicketService>();\nbuilder.Services.AddDbContext<AppDbContext>(\n    o => o.UseNpgsql(connectionString));",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Constructor primario",
+          "explanation": "El constructor primario de C# 12 puede reducir código. Sus parámetros no generan automáticamente propiedades públicas ni son readonly por sí solos.",
+          "code": "public class CreadorTickets(ITicketService tickets)\n{\n    public Task<Ticket?> Buscar(int id, CancellationToken ct)\n        => tickets.ObtenerAsync(id, ct);\n}",
+          "language": "csharp",
+          "insight": "Nunca inyectés un DbContext Scoped directamente dentro de un Singleton."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Identificá las interfaces en backend/Tickets.Api",
+          "Justificá por qué el contexto y el servicio son Scoped",
+          "Reescribí un constructor clásico como constructor primario"
+        ],
+        "solution": "builder.Services.AddScoped<ITicketService, TicketService>();\n// Controller(ITicketService service) lo recibe del contenedor.",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c03-p1",
+          "prompt": "¿Qué ciclo de vida suele corresponder a DbContext por petición?",
+          "options": [
+            "Singleton",
+            "Scoped",
+            "Transient de forma obligatoria",
+            "Static"
+          ],
+          "correct": 1,
+          "why": "AddDbContext usa Scoped por defecto."
+        },
+        {
+          "id": "c03-p2",
+          "prompt": "¿Qué genera automáticamente un constructor primario de class?",
+          "options": [
+            "Propiedad pública para cada argumento",
+            "Método Equals",
+            "Un constructor que acepta los parámetros",
+            "Una interfaz"
+          ],
+          "correct": 2,
+          "why": "Introduce parámetros de constructor; no crea propiedades públicas automáticamente."
+        },
+        {
+          "id": "c03-p3",
+          "prompt": "¿Para qué sirve una interfaz en este diseño?",
+          "options": [
+            "Obligar a usar base de datos",
+            "Definir un contrato",
+            "Evitar todos los tests",
+            "Crear la tabla SQL"
+          ],
+          "correct": 1,
+          "why": "La interfaz expresa las operaciones esperadas sin fijar la implementación."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Inyección de dependencias",
+          "url": "https://learn.microsoft.com/aspnet/core/fundamentals/dependency-injection"
+        },
+        {
+          "label": "Guía de C#",
+          "url": "https://learn.microsoft.com/dotnet/csharp/"
+        }
+      ]
+    },
+    {
+      "id": "clase-04",
+      "number": 4,
+      "title": "Controllers, HTTP, DTOs y validación",
+      "module": "II · ASP.NET Core",
+      "duration": 35,
+      "level": "Inicial",
+      "lead": "Convertí requerimientos en endpoints REST, cuidando el contrato público y la semántica HTTP.",
+      "outcomes": [
+        "Crear endpoints GET/POST/PUT/DELETE",
+        "Separar entidad de DTO de entrada",
+        "Interpretar códigos HTTP"
+      ],
+      "sections": [
+        {
+          "heading": "Controller y rutas",
+          "explanation": "[ApiController] habilita comportamientos de API, como validación automática del modelo. Las acciones deben priorizar transporte HTTP, no transacciones extensas.",
+          "code": "[ApiController]\n[Route(\"api/tickets\")]\npublic class TicketsController(ITicketService service) : ControllerBase\n{\n    [HttpGet(\"{id:int}\")]\n    public async Task<IActionResult> Obtener(int id, CancellationToken ct)\n    {\n        var ticket = await service.ObtenerAsync(id, ct);\n        return ticket is null ? NotFound() : Ok(ticket);\n    }\n}",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "DTO y overposting",
+          "explanation": "No aceptés directamente una entidad con campos administrados por el servidor. Un DTO permite declarar qué se puede enviar. DataAnnotations valida forma, no sustituye todas las reglas de negocio.",
+          "code": "public sealed class CrearTicketRequest\n{\n    [Required, MinLength(3), MaxLength(200)]\n    public string Titulo { get; init; } = \"\";\n}",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Semántica de HTTP",
+          "explanation": "201 indica creación; 204 éxito sin cuerpo; 404 recurso ausente; 400 datos inválidos; 409 conflicto. Evitá devolver 200 para todos los casos.",
+          "code": "return CreatedAtAction(nameof(Obtener), new { id = ticket.Id }, ticket);\n// o: return NoContent();",
+          "language": "csharp",
+          "insight": "Separa el contrato del DTO de las entidades persistidas para poder evolucionar la base sin romper clientes."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Localizá Controllers/TicketsController.cs",
+          "Probá GET y POST con curl",
+          "Enviá un título corto y verificá 400"
+        ],
+        "solution": "curl -i http://localhost:5100/api/tickets\ncurl -i -X POST http://localhost:5100/api/tickets -H \"Content-Type: application/json\" -d '{\"titulo\":\"Error de pago\"}'",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c04-p1",
+          "prompt": "¿Qué devuelve una creación exitosa según semántica REST?",
+          "options": [
+            "500",
+            "201",
+            "404",
+            "304"
+          ],
+          "correct": 1,
+          "why": "HTTP 201 Created indica que el recurso se creó."
+        },
+        {
+          "id": "c04-p2",
+          "prompt": "¿Qué evita mejor el overposting?",
+          "options": [
+            "Exponer DbContext",
+            "Recibir la entidad entera",
+            "Usar un DTO de entrada restringido",
+            "Desactivar validación"
+          ],
+          "correct": 2,
+          "why": "El DTO define explícitamente los campos que el cliente puede enviar."
+        },
+        {
+          "id": "c04-p3",
+          "prompt": "¿De dónde lee [FromRoute] int id?",
+          "options": [
+            "Encabezados",
+            "Cuerpo JSON",
+            "Variables del host",
+            "Parámetros en la ruta"
+          ],
+          "correct": 3,
+          "why": "FromRoute vincula segmentos declarados en el patrón de la ruta."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Web API con controllers",
+          "url": "https://learn.microsoft.com/aspnet/core/web-api/"
+        },
+        {
+          "label": "ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/"
+        }
+      ]
+    },
+    {
+      "id": "clase-05",
+      "number": 5,
+      "title": "Async/await, Task y cancelación",
+      "module": "II · ASP.NET Core",
+      "duration": 35,
+      "level": "Inicial",
+      "lead": "Aprendé a escribir servicios que esperan I/O sin bloquear innecesariamente hilos.",
+      "outcomes": [
+        "Comprender Task<T> y async",
+        "Propagar CancellationToken",
+        "Evitar paralelismo inseguro"
+      ],
+      "sections": [
+        {
+          "heading": "Async no equivale a otro hilo",
+          "explanation": "await libera el hilo mientras espera una operación de I/O que permita espera no bloqueante. No significa que se crea un hilo ni que las tareas se ejecutan automáticamente en paralelo.",
+          "code": "public async Task<Ticket?> ObtenerAsync(int id, CancellationToken ct)\n{\n    return await db.Tickets.FirstOrDefaultAsync(t => t.Id == id, ct);\n}",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "CancellationToken",
+          "explanation": "Los controllers pueden recibir un CancellationToken ligado a la solicitud HTTP y transmitirlo por toda la cadena. La cancelación es cooperativa.",
+          "code": "[HttpGet]\npublic async Task<IActionResult> Listar(CancellationToken ct)\n    => Ok(await service.ListarAsync(ct));",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "DbContext no es thread-safe",
+          "explanation": "No ejecutés dos operaciones concurrentes sobre el mismo DbContext. Cuando precisés verdadero paralelismo, creá contextos separados o serializá operaciones.",
+          "code": "// Incorrecto: mismo contexto concurrentemente\n// await Task.WhenAll(db.Tickets.CountAsync(), db.Usuarios.CountAsync());\n\nvar total = await db.Tickets.CountAsync(ct);\nvar usuarios = await db.Usuarios.CountAsync(ct);",
+          "language": "csharp",
+          "insight": "Para I/O en servicios HTTP, preferí los métodos async del proveedor y await de extremo a extremo."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Convertí un método de consulta a Task<T>",
+          "Propagá CancellationToken desde el controller al servicio",
+          "Identificá un caso de Task.WhenAll inseguro"
+        ],
+        "solution": "public async Task<int> ContarAsync(CancellationToken ct)\n    => await db.Tickets.CountAsync(ct);",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c05-p1",
+          "prompt": "¿Qué representa Task<Ticket?>?",
+          "options": [
+            "Un hilo obligatorio",
+            "Una operación asíncrona cuyo resultado puede ser null",
+            "Una transacción",
+            "Un query SQL"
+          ],
+          "correct": 1,
+          "why": "Task modela la operación y ? permite el valor nulo."
+        },
+        {
+          "id": "c05-p2",
+          "prompt": "¿Qué ocurre al usar await en una operación I/O?",
+          "options": [
+            "Siempre crea Thread",
+            "Bloquea hasta completar CPU",
+            "Permite esperar sin bloquear el hilo",
+            "Inicia una transacción"
+          ],
+          "correct": 2,
+          "why": "await no bloquea necesariamente el hilo durante I/O."
+        },
+        {
+          "id": "c05-p3",
+          "prompt": "¿Puede compartirse un DbContext entre queries en paralelo?",
+          "options": [
+            "Sí, siempre",
+            "Sí, con AsNoTracking",
+            "No en general",
+            "Sí, con readonly"
+          ],
+          "correct": 2,
+          "why": "DbContext no soporta operaciones concurrentes sobre la misma instancia."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Programación asíncrona en C#",
+          "url": "https://learn.microsoft.com/dotnet/csharp/asynchronous-programming/"
+        },
+        {
+          "label": "Entity Framework Core",
+          "url": "https://learn.microsoft.com/ef/core/"
+        }
+      ]
+    },
+    {
+      "id": "clase-06",
+      "number": 6,
+      "title": "Configuración, NuGet y entornos",
+      "module": "II · ASP.NET Core",
+      "duration": 35,
+      "level": "Inicial",
+      "lead": "Dominá el equivalente .NET de composer.json, .env y configuración por ambiente.",
+      "outcomes": [
+        "Leer appsettings y variables de entorno",
+        "Administrar paquetes NuGet",
+        "Separar configuración sensible"
+      ],
+      "sections": [
+        {
+          "heading": "Fuentes de configuración",
+          "explanation": "appsettings.json, archivos por entorno, variables de entorno y User Secrets pueden combinarse. Variables anidadas usan doble guion bajo. La precedencia exacta depende del host y del origen.",
+          "code": "{\n  \"ConnectionStrings\": {\"DefaultConnection\":\"(solo ejemplo, no guardar secretos)\"},\n  \"Tickets\": {\"MaxPageSize\":100}\n}",
+          "language": "json",
+          "insight": ""
+        },
+        {
+          "heading": "User Secrets",
+          "explanation": "En desarrollo, User Secrets almacena valores fuera del repositorio. No cifra secretos: en producción utilizá variables seguras o un secret manager.",
+          "code": "dotnet user-secrets init\ndotnet user-secrets set \"ConnectionStrings:DefaultConnection\" \"Host=localhost;Database=tickets;Username=tickets;Password=local\"\nexport Tickets__MaxPageSize=50",
+          "language": "bash",
+          "insight": ""
+        },
+        {
+          "heading": "NuGet",
+          "explanation": "PackageReference se escribe en .csproj. Las herramientas locales de dotnet pueden versionarse con .config/dotnet-tools.json.",
+          "code": "dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL --version 10.0.3\ndotnet new tool-manifest\ndotnet tool install dotnet-ef --version 10.0.3",
+          "language": "bash",
+          "insight": "No subás credenciales reales a appsettings.json ni a Dockerfiles."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Ubicá appsettings.json y la variable ConnectionStrings__DefaultConnection",
+          "Configurá la conexión local sin commitear la contraseña",
+          "Identificá los PackageReference del proyecto"
+        ],
+        "solution": "export ConnectionStrings__DefaultConnection=\"Host=localhost;Port=5433;Database=tickets_db;Username=tickets;Password=tickets_dev\"\ndotnet run --project backend/Tickets.Api",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c06-p1",
+          "prompt": "¿Cuál es la clave de entorno para Tickets:MaxPageSize?",
+          "options": [
+            "Tickets_MaxPageSize",
+            "Tickets.MaxPageSize",
+            "Tickets__MaxPageSize",
+            "Tickets/MaxPageSize"
+          ],
+          "correct": 2,
+          "why": "Dos guiones bajos representan el separador jerárquico :."
+        },
+        {
+          "id": "c06-p2",
+          "prompt": "¿Dónde se declaran PackageReference?",
+          "options": [
+            ".csproj",
+            "appsettings",
+            "Program.cs",
+            "Dockerfile"
+          ],
+          "correct": 0,
+          "why": "NuGet utiliza referencias en el archivo de proyecto."
+        },
+        {
+          "id": "c06-p3",
+          "prompt": "¿Son los User Secrets un almacén cifrado para producción?",
+          "options": [
+            "Sí",
+            "Solo para Docker",
+            "Solo en Windows",
+            "No"
+          ],
+          "correct": 3,
+          "why": "User Secrets se usa en desarrollo y no cifra los valores."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Configuración ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/fundamentals/configuration/"
+        },
+        {
+          "label": "Documentación .NET",
+          "url": "https://learn.microsoft.com/dotnet/"
+        }
+      ]
+    },
+    {
+      "id": "clase-07",
+      "number": 7,
+      "title": "PostgreSQL, DbContext y migraciones",
+      "module": "III · Datos y LINQ",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Convertí clases C# en tablas PostgreSQL manteniendo control del esquema.",
+      "outcomes": [
+        "Mapear entidades con Fluent API",
+        "Registrar DbContext",
+        "Crear y revisar migraciones"
+      ],
+      "sections": [
+        {
+          "heading": "Entidad y DbSet",
+          "explanation": "DbSet<T> representa un conjunto consultable de entidades. EF Core utiliza el contexto como unidad de trabajo y rastrea cambios cuando corresponde.",
+          "code": "public class Ticket\n{\n    public int Id { get; set; }\n    public string Titulo { get; set; } = \"\";\n    public bool Resuelto { get; set; }\n}\n\npublic DbSet<Ticket> Tickets => Set<Ticket>();",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Fluent API",
+          "explanation": "La configuración explícita facilita mantener tablas y columnas en snake_case, restricciones y relaciones.",
+          "code": "modelBuilder.Entity<Ticket>(e =>\n{\n    e.ToTable(\"tickets\");\n    e.HasKey(x => x.Id);\n    e.Property(x => x.Titulo).HasColumnName(\"titulo\").HasMaxLength(200);\n});",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Migraciones",
+          "explanation": "Generá el cambio, inspeccioná operaciones Up/Down y aplicalo. No ejecutes migraciones automáticamente al iniciar múltiples réplicas de producción.",
+          "code": "dotnet ef migrations add InitialCreate --project backend/Tickets.Api\ndotnet ef database update --project backend/Tickets.Api",
+          "language": "bash",
+          "insight": "El proyecto de referencia incluye instrucciones de migración, no una migración generada automáticamente en este entorno."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Levantá PostgreSQL mediante Docker Compose",
+          "Generá tu primera migración",
+          "Consultá la tabla __EFMigrationsHistory"
+        ],
+        "solution": "docker compose up -d postgres\ndotnet ef migrations add InitialCreate --project backend/Tickets.Api\ndotnet ef database update --project backend/Tickets.Api",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c07-p1",
+          "prompt": "¿Cuál es la finalidad de DbContext?",
+          "options": [
+            "Servir archivos CSS",
+            "Unidad de trabajo con entidades",
+            "Ejecutar NuGet",
+            "Controlar puertos Docker"
+          ],
+          "correct": 1,
+          "why": "DbContext coordina consultas, cambios y persistencia."
+        },
+        {
+          "id": "c07-p2",
+          "prompt": "¿Qué comando crea archivos de migración?",
+          "options": [
+            "dotnet publish",
+            "dotnet ef migrations add",
+            "dotnet test",
+            "dotnet restore"
+          ],
+          "correct": 1,
+          "why": "migrations add genera el cambio de esquema versionado."
+        },
+        {
+          "id": "c07-p3",
+          "prompt": "¿Qué aporta una migración revisada?",
+          "options": [
+            "Evita SQL siempre",
+            "Permite controlar cambios del esquema",
+            "Cambia el lenguaje a PHP",
+            "Hace innecesaria PostgreSQL"
+          ],
+          "correct": 1,
+          "why": "Una migración documenta operaciones de evolución de la base."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Entity Framework Core",
+          "url": "https://learn.microsoft.com/ef/core/"
+        },
+        {
+          "label": "Migraciones EF Core",
+          "url": "https://learn.microsoft.com/ef/core/managing-schemas/migrations/"
+        },
+        {
+          "label": "Proveedor Npgsql EF Core",
+          "url": "https://www.npgsql.org/efcore/"
+        }
+      ]
+    },
+    {
+      "id": "clase-08",
+      "number": 8,
+      "title": "LINQ: IQueryable, IEnumerable y SQL",
+      "module": "III · Datos y LINQ",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Dejá de pensar LINQ solo como sintaxis: comprendé dónde se ejecutan tus operadores.",
+      "outcomes": [
+        "Diferenciar composición y materialización",
+        "Analizar traducción SQL",
+        "Controlar evaluaciones en memoria"
+      ],
+      "sections": [
+        {
+          "heading": "Composición diferida",
+          "explanation": "IQueryable<T> construye una expresión que el proveedor puede traducir. ToListAsync materializa. IEnumerable<T> representa una secuencia y sus operaciones pueden correr en memoria.",
+          "code": "IQueryable<Ticket> query = db.Tickets.AsNoTracking();\nquery = query.Where(t => !t.Resuelto);\nquery = query.OrderByDescending(t => t.Id);\nvar tickets = await query.ToListAsync(ct);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "El peligro de materializar temprano",
+          "explanation": "Si ejecutás ToListAsync antes de Where, descargás filas innecesarias. En producción, filtrá y proyectá antes de materializar.",
+          "code": "// Mejor\nvar titulos = await db.Tickets\n    .Where(t => !t.Resuelto)\n    .Select(t => t.Titulo)\n    .ToListAsync(ct);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Inspeccioná SQL",
+          "explanation": "ToQueryString ayuda a entender la consulta sin ejecutarla. EF Core puede rechazar métodos arbitrarios en filtros cuando no sabe traducirlos.",
+          "code": "var query = db.Tickets.Where(t => !t.Resuelto);\nConsole.WriteLine(query.ToQueryString());",
+          "language": "csharp",
+          "insight": "Un método propio en un Where de EF puede causar excepción de traducción, no filtrado automático en memoria."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Implementá filtro por pendientes",
+          "Inspeccioná el SQL con ToQueryString",
+          "Compará ToListAsync antes y después de Where"
+        ],
+        "solution": "var query = db.Tickets.Where(t => !t.Resuelto);\nConsole.WriteLine(query.ToQueryString());\nvar rows = await query.Take(5).ToListAsync();",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c08-p1",
+          "prompt": "¿Qué dispara la ejecución y materialización de una consulta EF?",
+          "options": [
+            "Where",
+            "OrderBy",
+            "ToListAsync",
+            "Select"
+          ],
+          "correct": 2,
+          "why": "ToListAsync materializa la consulta construida."
+        },
+        {
+          "id": "c08-p2",
+          "prompt": "¿Qué conviene evitar al filtrar 100000 filas?",
+          "options": [
+            "Where en SQL",
+            "Select al DTO",
+            "ToListAsync antes de Where",
+            "AsNoTracking de lectura"
+          ],
+          "correct": 2,
+          "why": "Materializar antes del filtro puede descargar registros innecesarios."
+        },
+        {
+          "id": "c08-p3",
+          "prompt": "¿Qué muestra ToQueryString?",
+          "options": [
+            "Tiempo exacto de disco",
+            "SQL representativo sin ejecutar",
+            "Contraseña de la DB",
+            "Todas las filas"
+          ],
+          "correct": 1,
+          "why": "Muestra la traducción SQL con fines de diagnóstico."
+        }
+      ],
+      "resources": [
+        {
+          "label": "LINQ en C#",
+          "url": "https://learn.microsoft.com/dotnet/csharp/linq/"
+        },
+        {
+          "label": "Entity Framework Core",
+          "url": "https://learn.microsoft.com/ef/core/"
+        },
+        {
+          "label": "Rendimiento EF Core",
+          "url": "https://learn.microsoft.com/ef/core/performance/efficient-querying"
+        }
+      ]
+    },
+    {
+      "id": "clase-09",
+      "number": 9,
+      "title": "Filtros dinámicos, DTOs y paginación",
+      "module": "III · Datos y LINQ",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Construí endpoints listables con búsqueda, orden total, tamaños de página limitados y proyección.",
+      "outcomes": [
+        "Componer condiciones opcionales",
+        "Aplicar Skip/Take y keyset",
+        "Proyectar a respuestas DTO"
+      ],
+      "sections": [
+        {
+          "heading": "Filtros opcionales",
+          "explanation": "Con bool? distinguis filtro ausente, true y false. Condiciones compuestas no necesitan SQL concatenado.",
+          "code": "IQueryable<Ticket> query = db.Tickets.AsNoTracking();\nif (filtro.Resuelto is bool estado)\n    query = query.Where(t => t.Resuelto == estado);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "OFFSET con orden estable",
+          "explanation": "Usá OrderBy y ThenBy por una clave única antes de Skip/Take. Contá antes de paginar para devolver el total.",
+          "code": "var total = await query.CountAsync(ct);\nvar items = await query\n    .OrderBy(t => t.Titulo).ThenBy(t => t.Id)\n    .Skip((pagina - 1) * porPagina).Take(porPagina)\n    .Select(t => new TicketResponse(t.Id,t.Titulo,t.Resuelto))\n    .ToListAsync(ct);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Keyset pagination",
+          "explanation": "Para resultados grandes y navegación secuencial, buscá desde el último identificador de la página previa. OFFSET puede requerir recorrer muchas filas.",
+          "code": "var siguientes = await db.Tickets\n    .Where(t => t.Id < ultimoId)\n    .OrderByDescending(t => t.Id)\n    .Take(20).ToListAsync(ct);",
+          "language": "csharp",
+          "insight": "Aplicá límites a porPagina y validá entradas antes de calcular Skip."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Agregá filtro resuelto nullable a un DTO",
+          "Creá un Listado paginado de diez elementos",
+          "Aplicá orden estable con Id como desempate"
+        ],
+        "solution": "var items = await db.Tickets.AsNoTracking()\n    .OrderBy(t => t.Titulo).ThenBy(t => t.Id)\n    .Skip(10).Take(10)\n    .Select(t => new TicketResponse(t.Id,t.Titulo,t.Resuelto))\n    .ToListAsync();",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c09-p1",
+          "prompt": "¿Qué expresa bool? en un filtro?",
+          "options": [
+            "Siempre true",
+            "Tres estados: null, true o false",
+            "Solo datos SQL",
+            "Un enum"
+          ],
+          "correct": 1,
+          "why": "Nullable permite distinguir ausencia del filtro de false."
+        },
+        {
+          "id": "c09-p2",
+          "prompt": "¿Para qué se agrega ThenBy(t => t.Id)?",
+          "options": [
+            "Evitar empates arbitrarios en paginación",
+            "Crear índices",
+            "Contar filas",
+            "Hacer JOIN"
+          ],
+          "correct": 0,
+          "why": "Una clave única secundaria hace total el orden."
+        },
+        {
+          "id": "c09-p3",
+          "prompt": "¿Qué ejecuta EF para Select a DTO?",
+          "options": [
+            "Puede seleccionar columnas necesarias",
+            "Siempre SELECT *",
+            "Hace N+1 automáticamente",
+            "Actualiza las tablas"
+          ],
+          "correct": 0,
+          "why": "Las proyecciones permiten solicitar solo las columnas utilizadas."
+        }
+      ],
+      "resources": [
+        {
+          "label": "LINQ en C#",
+          "url": "https://learn.microsoft.com/dotnet/csharp/linq/"
+        },
+        {
+          "label": "Rendimiento EF Core",
+          "url": "https://learn.microsoft.com/ef/core/performance/efficient-querying"
+        },
+        {
+          "label": "Web API con controllers",
+          "url": "https://learn.microsoft.com/aspnet/core/web-api/"
+        }
+      ]
+    },
+    {
+      "id": "clase-10",
+      "number": 10,
+      "title": "GroupBy, JOIN, HAVING y subconsultas",
+      "module": "III · Datos y LINQ",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Traducí consultas empresariales complejas a expresiones comprensibles y verificables.",
+      "outcomes": [
+        "Usar GroupBy con agregaciones",
+        "Distinguir filtro de filas vs grupos",
+        "Aplicar Any y LeftJoin"
+      ],
+      "sections": [
+        {
+          "heading": "Where antes y después de GroupBy",
+          "explanation": "Antes del agrupamiento filtra filas; después de proyectar el conteo filtra grupos (equivalente a HAVING).",
+          "code": "var resumen = await db.Tickets\n    .Where(t => !t.Resuelto)\n    .GroupBy(t => t.UsuarioId)\n    .Select(g => new { UsuarioId = g.Key, Total = g.Count() })\n    .Where(g => g.Total > 5)\n    .OrderByDescending(g => g.Total)\n    .ToListAsync(ct);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "JOIN y LEFT JOIN",
+          "explanation": "Join incluye coincidencias; LeftJoin de .NET 10 preserva las filas de la izquierda cuando no hay coincidencia. Navegaciones suelen producir expresiones más legibles.",
+          "code": "var filas = await db.Usuarios\n    .LeftJoin(db.Tickets, u => (int?)u.Id, t => t.UsuarioId,\n        (u, t) => new { Nombre = u.Nombre, TicketId = t == null ? (int?)null : t.Id })\n    .ToListAsync(ct);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "EXISTS vía Any",
+          "explanation": "Any expresa existencia sin descargar toda la colección. En consultas relacionadas, EF puede traducirlo a EXISTS.",
+          "code": "var sinTickets = await db.Usuarios\n    .Where(u => !u.Tickets.Any())\n    .Select(u => u.Nombre)\n    .ToListAsync(ct);",
+          "language": "csharp",
+          "insight": "Cuidado: Count() después de LEFT JOIN puede contar una fila nula; usá una clave no nula del lado derecho."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Contá tickets pendientes por usuario",
+          "Buscá usuarios sin tickets mediante Any",
+          "Traducí LEFT JOIN a LINQ y verificá el SQL"
+        ],
+        "solution": "var result = await db.Usuarios.Select(u => new { u.Nombre, Total = u.Tickets.Count() })\n    .OrderByDescending(x => x.Total).ToListAsync();",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c10-p1",
+          "prompt": "¿Qué hace un Where después de proyectar Count sobre GroupBy?",
+          "options": [
+            "Filtra grupos por agregado",
+            "Valida la conexión",
+            "Crea una FK",
+            "Carga todas las entidades"
+          ],
+          "correct": 0,
+          "why": "El filtro del total equivale conceptualmente a HAVING."
+        },
+        {
+          "id": "c10-p2",
+          "prompt": "¿Qué operador representa existencia de elementos?",
+          "options": [
+            "Take",
+            "Any",
+            "Distinct",
+            "Skip"
+          ],
+          "correct": 1,
+          "why": "Any comprueba existencia y suele convertirse en EXISTS."
+        },
+        {
+          "id": "c10-p3",
+          "prompt": "¿Qué conserva LEFT JOIN?",
+          "options": [
+            "Solo coincidencias",
+            "Solo los nulos",
+            "Todas las filas de la tabla izquierda",
+            "Solo el lado derecho"
+          ],
+          "correct": 2,
+          "why": "LEFT JOIN conserva todas las filas izquierdas, aun sin coincidencias."
+        }
+      ],
+      "resources": [
+        {
+          "label": "LINQ en C#",
+          "url": "https://learn.microsoft.com/dotnet/csharp/linq/"
+        },
+        {
+          "label": "Entity Framework Core",
+          "url": "https://learn.microsoft.com/ef/core/"
+        },
+        {
+          "label": "Proveedor Npgsql EF Core",
+          "url": "https://www.npgsql.org/efcore/"
+        }
+      ]
+    },
+    {
+      "id": "clase-11",
+      "number": 11,
+      "title": "Relaciones, Include y N+1",
+      "module": "III · Datos y LINQ",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Representá usuarios, tickets y comentarios sin disparar consultas innecesarias.",
+      "outcomes": [
+        "Configurar relaciones uno a muchos",
+        "Usar cargas y proyecciones",
+        "Identificar N+1 y multiplicación de filas"
+      ],
+      "sections": [
+        {
+          "heading": "Foreign keys y navegaciones",
+          "explanation": "La clave foránea puede ser nullable si la relación es opcional. Navegaciones no implican carga automática de datos.",
+          "code": "public class Ticket\n{\n    public int Id { get; set; }\n    public int? UsuarioId { get; set; }\n    public Usuario? Usuario { get; set; }\n    public ICollection<Comentario> Comentarios { get; set; } = [];\n}",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Fluent API",
+          "explanation": "HasOne/WithMany/HasForeignKey define el vínculo. Define DeleteBehavior según negocio, no solo conveniencia.",
+          "code": "modelBuilder.Entity<Ticket>()\n    .HasOne(t => t.Usuario)\n    .WithMany(u => u.Tickets)\n    .HasForeignKey(t => t.UsuarioId)\n    .OnDelete(DeleteBehavior.SetNull);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Include vs Select",
+          "explanation": "Include carga entidades relacionadas. Para respuestas HTTP generalmente proyectá a DTO, evitando entidades completas. N+1 aparece cuando se lanzan consultas por cada fila.",
+          "code": "var resumen = await db.Usuarios\n    .Select(u => new { u.Id, u.Nombre, Total = u.Tickets.Count() })\n    .ToListAsync(ct);",
+          "language": "csharp",
+          "insight": "AsSplitQuery puede evitar multiplicación de filas, pero añade viajes y posibles diferencias entre lecturas concurrentes."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Identificá las propiedades de navegación de Ticket",
+          "Creá una proyección con conteo de comentarios",
+          "Explicá cómo un foreach con CountAsync causa N+1"
+        ],
+        "solution": "var datos = await db.Tickets.Select(t => new { t.Id, t.Titulo, TotalComentarios = t.Comentarios.Count() }).ToListAsync();",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c11-p1",
+          "prompt": "¿Para qué sirve Include?",
+          "options": [
+            "Carga anticipada de relaciones",
+            "Aplica migrations",
+            "Define Task",
+            "Maneja excepciones"
+          ],
+          "correct": 0,
+          "why": "Include solicita relaciones al materializar entidades."
+        },
+        {
+          "id": "c11-p2",
+          "prompt": "¿Qué produce N+1?",
+          "options": [
+            "Una consulta que agrega",
+            "Una consulta inicial más una por entidad",
+            "Un único COUNT",
+            "Un INSERT múltiple"
+          ],
+          "correct": 1,
+          "why": "El patrón N+1 produce consultas repetidas por elemento."
+        },
+        {
+          "id": "c11-p3",
+          "prompt": "¿Qué describe una relación opcional?",
+          "options": [
+            "FK obligatoriamente int",
+            "FK nullable",
+            "Sin clave primaria",
+            "Un record inmutable"
+          ],
+          "correct": 1,
+          "why": "La clave foránea puede ser null cuando no hay entidad relacionada."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Relaciones EF Core",
+          "url": "https://learn.microsoft.com/ef/core/modeling/relationships/"
+        },
+        {
+          "label": "Rendimiento EF Core",
+          "url": "https://learn.microsoft.com/ef/core/performance/efficient-querying"
+        },
+        {
+          "label": "Entity Framework Core",
+          "url": "https://learn.microsoft.com/ef/core/"
+        }
+      ]
+    },
+    {
+      "id": "clase-12",
+      "number": 12,
+      "title": "Service Layer, Repository y Unit of Work",
+      "module": "IV · Arquitectura y calidad",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Tomá decisiones de arquitectura pragmáticas en vez de agregar patrones por costumbre.",
+      "outcomes": [
+        "Separar HTTP y negocio",
+        "Valorar cuándo un Repository aporta",
+        "Identificar el papel de DbContext"
+      ],
+      "sections": [
+        {
+          "heading": "Controladores delgados",
+          "explanation": "Controllers manejan transporte; Services coordinan casos de uso; Domain protege invariantes; Infrastructure implementa integración.",
+          "code": "[HttpPost(\"completos\")]\npublic async Task<IActionResult> Crear(CrearTicketRequest req, CancellationToken ct)\n{\n    var result = await workflow.CrearAsync(req, ct);\n    return result is null ? BadRequest() : Ok(result);\n}",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "DbContext como unidad de trabajo",
+          "explanation": "DbContext y DbSet ya cubren varias responsabilidades típicas de Unit of Work y Repository. Crear otra capa solo conviene si agrega contratos o comportamiento útiles.",
+          "code": "public sealed class TicketWorkflow(AppDbContext db)\n{\n    public async Task<int> CrearAsync(string titulo, CancellationToken ct)\n    {\n        var ticket = new Ticket { Titulo = titulo };\n        db.Tickets.Add(ticket);\n        await db.SaveChangesAsync(ct);\n        return ticket.Id;\n    }\n}",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Separación por características",
+          "explanation": "Al crecer podés organizar por módulos (Tickets, Usuarios, Comentarios) antes de dividir todo en varias soluciones y bibliotecas. Evitá acoplar Domain a Controllers.",
+          "code": "Tickets/\n  CreateTicket/\n    CreateTicketRequest.cs\n    CreateTicketHandler.cs\n  ListTickets/\n    TicketQuery.cs\n    ListTicketsHandler.cs",
+          "language": "text",
+          "insight": "Un Repository CRUD genérico que solo duplica EF Core puede añadir complejidad sin valor."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Clasificá responsabilidades del flujo CrearCompleto",
+          "Identificá una abstracción que podrías omitir",
+          "Definí un servicio específico por caso de uso"
+        ],
+        "solution": "public sealed class CrearTicket(AppDbContext db) { /* caso de uso */ }\n// No hace falta IRepository<T> si solo reexpone DbSet<T>.",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c12-p1",
+          "prompt": "¿Qué componente traduce resultados de negocio a HTTP?",
+          "options": [
+            "DbContext",
+            "Controller",
+            "Entity",
+            "PostgreSQL"
+          ],
+          "correct": 1,
+          "why": "El controller decide cómo representar el resultado del caso de uso en HTTP."
+        },
+        {
+          "id": "c12-p2",
+          "prompt": "¿Qué patrón se relaciona con DbContext?",
+          "options": [
+            "Unit of Work",
+            "Factory de UI",
+            "Singleton obligado",
+            "Observer de CSS"
+          ],
+          "correct": 0,
+          "why": "DbContext coordina cambios y persistencia de una unidad de trabajo."
+        },
+        {
+          "id": "c12-p3",
+          "prompt": "¿Cuándo es útil un Repository propio?",
+          "options": [
+            "Siempre para cada tabla",
+            "Cuando encapsula una abstracción con valor",
+            "Para evitar todos los DTOs",
+            "Para ejecutar build"
+          ],
+          "correct": 1,
+          "why": "Un repositorio puede aportar límites y consultas reutilizables, pero no siempre es necesario."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Entity Framework Core",
+          "url": "https://learn.microsoft.com/ef/core/"
+        },
+        {
+          "label": "Inyección de dependencias",
+          "url": "https://learn.microsoft.com/aspnet/core/fundamentals/dependency-injection"
+        },
+        {
+          "label": "ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/"
+        }
+      ]
+    },
+    {
+      "id": "clase-13",
+      "number": 13,
+      "title": "Transacciones, rollback e idempotencia",
+      "module": "IV · Arquitectura y calidad",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Garantizá consistencia de operaciones multi-entidad y diferenciá atomicidad de idempotencia.",
+      "outcomes": [
+        "Elegir transacción implícita o explícita",
+        "Manejar errores en múltiples SaveChanges",
+        "Diseñar operaciones repetibles"
+      ],
+      "sections": [
+        {
+          "heading": "Un SaveChanges es transaccional",
+          "explanation": "Cuando persistís un ticket con sus comentarios asociados mediante un solo SaveChangesAsync, EF Core normalmente usa una transacción para el conjunto de cambios.",
+          "code": "var ticket = new Ticket { Titulo = \"Incidencia\" };\nticket.Comentarios.Add(new Comentario { Texto = \"Primera nota\" });\ndb.Tickets.Add(ticket);\nawait db.SaveChangesAsync(ct);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Transacción explícita",
+          "explanation": "Para coordinar varias llamadas a SaveChanges, abrí una transacción y confirmala después de completar todas. La eliminación por excepción antes de Commit revierte cambios no confirmados.",
+          "code": "await using var tx = await db.Database.BeginTransactionAsync(ct);\ndb.Tickets.Add(ticket);\nawait db.SaveChangesAsync(ct);\ndb.Auditorias.Add(auditoria);\nawait db.SaveChangesAsync(ct);\nawait tx.CommitAsync(ct);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Idempotencia y reintentos",
+          "explanation": "Un cliente puede repetir POST por timeout aunque el servidor haya guardado. Usá una clave de idempotencia con índice único y guarda el resultado de manera atómica. Las llamadas a un servicio externo necesitan Outbox o compensaciones.",
+          "code": "CREATE UNIQUE INDEX ux_solicitudes_clave\nON solicitudes_idempotentes (clave);",
+          "language": "sql",
+          "insight": "Una transacción de PostgreSQL no puede deshacer un correo o una llamada HTTP externa ya enviada."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Creá un ticket y comentario con un SaveChanges",
+          "Diseñá un caso con dos SaveChanges protegidos",
+          "Escribí una regla de unicidad para una clave de idempotencia"
+        ],
+        "solution": "await using var tx = await db.Database.BeginTransactionAsync(ct);\n// Modificar varias entidades; guardar y confirmar sólo al final.\nawait db.SaveChangesAsync(ct);\nawait tx.CommitAsync(ct);",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c13-p1",
+          "prompt": "¿Qué suele garantizar una única llamada a SaveChanges en PostgreSQL?",
+          "options": [
+            "Atomicidad del guardado",
+            "Entrega de emails",
+            "Autenticación JWT",
+            "No tener conflictos"
+          ],
+          "correct": 0,
+          "why": "EF Core utiliza transacciones para proteger cambios en un único SaveChanges."
+        },
+        {
+          "id": "c13-p2",
+          "prompt": "¿Para qué sirve una clave de idempotencia?",
+          "options": [
+            "Mostrar logs",
+            "Evitar duplicados por reintentos",
+            "Crear rutas",
+            "Ordenar tickets"
+          ],
+          "correct": 1,
+          "why": "Identifica intentos repetidos de la misma operación."
+        },
+        {
+          "id": "c13-p3",
+          "prompt": "¿Puede PostgreSQL revertir un correo ya enviado mediante rollback?",
+          "options": [
+            "Sí, siempre",
+            "Solo con Include",
+            "No",
+            "Solo con LINQ"
+          ],
+          "correct": 2,
+          "why": "La transacción de DB no alcanza a sistemas externos."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Transacciones EF Core",
+          "url": "https://learn.microsoft.com/ef/core/saving/transactions"
+        },
+        {
+          "label": "Entity Framework Core",
+          "url": "https://learn.microsoft.com/ef/core/"
+        },
+        {
+          "label": "Documentación PostgreSQL",
+          "url": "https://www.postgresql.org/docs/current/"
+        }
+      ]
+    },
+    {
+      "id": "clase-14",
+      "number": 14,
+      "title": "Excepciones, ProblemDetails y errores de dominio",
+      "module": "IV · Arquitectura y calidad",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Convertí fallos inesperados en respuestas seguras sin ocultar errores del sistema.",
+      "outcomes": [
+        "Distinguir validación de excepción",
+        "Configurar handler global",
+        "Producir ProblemDetails seguros"
+      ],
+      "sections": [
+        {
+          "heading": "Errores esperados y excepciones",
+          "explanation": "Un título inválido es una validación; un usuario inexistente puede ser un resultado 404; una caída inesperada de DB es fallo interno. No respondas 400 a cualquier Exception.",
+          "code": "public enum CrearTicketEstado { Creado, UsuarioNoEncontrado, Invalido }\npublic record CrearTicketResult(CrearTicketEstado Estado, int? Id = null);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Handler global",
+          "explanation": "IExceptionHandler encapsula logging y respuesta HTTP. Evitá exponer exception.Message, rutas internas o consultas SQL al cliente.",
+          "code": "builder.Services.AddProblemDetails();\nbuilder.Services.AddExceptionHandler<GlobalExceptionHandler>();\nvar app = builder.Build();\napp.UseExceptionHandler();\napp.MapControllers();",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "ProblemDetails",
+          "explanation": "RFC 9457 define estructura de problema: type, title, status, detail e instance. Para validación model-bound, [ApiController] puede retornar ValidationProblemDetails.",
+          "code": "return Problem(\n    statusCode: StatusCodes.Status404NotFound,\n    title: \"Usuario no encontrado\",\n    detail: \"El usuario asignado no existe.\");",
+          "language": "csharp",
+          "insight": "Logueá información técnica internamente, pero respondé mensajes seguros al consumidor."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Provocá una solicitud inválida y observá 400",
+          "Provocá una ruta de recurso inexistente y observá 404",
+          "Explicá qué detalles no debe exponer un error 500"
+        ],
+        "solution": "builder.Services.AddProblemDetails();\n// En Program.cs: app.UseExceptionHandler();\n// En controllers: return Problem(statusCode: 404, title: \"No encontrado\");",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c14-p1",
+          "prompt": "¿Qué código corresponde a un recurso ausente?",
+          "options": [
+            "400",
+            "404",
+            "500",
+            "201"
+          ],
+          "correct": 1,
+          "why": "404 comunica que el recurso solicitado no se encuentra."
+        },
+        {
+          "id": "c14-p2",
+          "prompt": "¿Por qué no devolver exception.Message al cliente?",
+          "options": [
+            "Se compila más lento",
+            "Puede revelar información interna",
+            "Genera migraciones",
+            "Necesita NuGet"
+          ],
+          "correct": 1,
+          "why": "Los mensajes internos pueden exponer datos técnicos sensibles."
+        },
+        {
+          "id": "c14-p3",
+          "prompt": "¿Qué proporciona AddProblemDetails?",
+          "options": [
+            "Un estándar de representación de errores",
+            "Un proveedor de SQL",
+            "Un servidor Kestrel nuevo",
+            "Un logger externo obligatorio"
+          ],
+          "correct": 0,
+          "why": "Registra servicios para generar respuestas ProblemDetails."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Manejo de errores ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/fundamentals/error-handling"
+        },
+        {
+          "label": "Web API con controllers",
+          "url": "https://learn.microsoft.com/aspnet/core/web-api/"
+        },
+        {
+          "label": "ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/"
+        }
+      ]
+    },
+    {
+      "id": "clase-15",
+      "number": 15,
+      "title": "Logging estructurado y observabilidad",
+      "module": "IV · Arquitectura y calidad",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Diseñá registros que ayuden a diagnosticar incidentes sin exponer información sensible.",
+      "outcomes": [
+        "Usar ILogger<T> y niveles",
+        "Registrar propiedades estructuradas",
+        "Conectar trazas, métricas y logs"
+      ],
+      "sections": [
+        {
+          "heading": "Logging estructurado",
+          "explanation": "ILogger<T> está integrado. Usá placeholders en vez de interpolación cuando quieras conservar TicketId como atributo estructurado.",
+          "code": "logger.LogInformation(\"Ticket {TicketId} creado por {UserId}\", ticket.Id, usuarioId);\nlogger.LogWarning(\"Se intentó resolver ticket inexistente: {TicketId}\", id);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Niveles de log",
+          "explanation": "Debug sirve para diagnóstico; Information para eventos relevantes; Warning para anomalías recuperables; Error para fallos. Nunca registres tokens ni contraseñas.",
+          "code": "{\n  \"Logging\": {\"LogLevel\": {\"Default\": \"Information\", \"Microsoft.AspNetCore\": \"Warning\"}}\n}",
+          "language": "json",
+          "insight": ""
+        },
+        {
+          "heading": "Tracing distribuido",
+          "explanation": "Activity y OpenTelemetry correlacionan eventos entre HTTP, servicios y DB. En un sistema con RabbitMQ o múltiples APIs, propagá el contexto de traza.",
+          "code": "using var activity = ActivitySource.StartActivity(\"tickets.crear\");\nactivity?.SetTag(\"ticket.tipo\", \"incidencia\");",
+          "language": "csharp",
+          "insight": "Una traza no reemplaza una excepción manejada correctamente ni un log que explique el fallo."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Agregá LogInformation al crear un ticket",
+          "Agregá LogWarning ante recurso ausente",
+          "Definí qué información nunca registrarías"
+        ],
+        "solution": "logger.LogInformation(\"Ticket {TicketId} generado\", ticket.Id);\n// No: logger.LogInformation($\"Token={jwt}\")",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c15-p1",
+          "prompt": "¿Por qué placeholders son útiles en ILogger?",
+          "options": [
+            "Guarda propiedades estructuradas",
+            "Elimina errores SQL",
+            "Vuelve async el método",
+            "Es obligatorio para compilar"
+          ],
+          "correct": 0,
+          "why": "Los proveedores pueden indexar valores de propiedades separadamente."
+        },
+        {
+          "id": "c15-p2",
+          "prompt": "¿Cuál nivel usarías para un fallo inesperado en DB?",
+          "options": [
+            "Trace",
+            "Information",
+            "Error",
+            "Debug únicamente"
+          ],
+          "correct": 2,
+          "why": "Error registra fallos que impiden completar una operación."
+        },
+        {
+          "id": "c15-p3",
+          "prompt": "¿Qué no deberías registrar?",
+          "options": [
+            "TicketId",
+            "Duración",
+            "JWT secreto completo",
+            "Nombre del endpoint"
+          ],
+          "correct": 2,
+          "why": "Los tokens pueden ser credenciales de acceso."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Logging ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/fundamentals/logging/"
+        },
+        {
+          "label": "ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/"
+        }
+      ]
+    },
+    {
+      "id": "clase-16",
+      "number": 16,
+      "title": "Pruebas unitarias con xUnit",
+      "module": "IV · Arquitectura y calidad",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Aprendé a hacer evolucionar la lógica de negocio con confianza y sin depender de la red.",
+      "outcomes": [
+        "Escribir Facts y Theories",
+        "Practicar Arrange/Act/Assert",
+        "Aislar reglas puras"
+      ],
+      "sections": [
+        {
+          "heading": "Fact vs Theory",
+          "explanation": "Fact ejecuta un escenario; Theory repite la prueba con diferentes entradas. Para reglas puras evitá inicializar ASP.NET o DB.",
+          "code": "[Theory]\n[InlineData(\"\", false)]\n[InlineData(\"ab\", false)]\n[InlineData(\"Error de pago\", true)]\npublic void ValidarTitulo(string titulo, bool esperado)\n{\n    Assert.Equal(esperado, TicketRules.TituloValido(titulo));\n}",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Arrange / Act / Assert",
+          "explanation": "Separá datos, ejecución y verificación. Probá condiciones límite: 2/3/200/201 caracteres y espacios. Testear solo el caso feliz deja huecos.",
+          "code": "// Arrange\nvar titulo = new string('a', 201);\n// Act\nvar valido = TicketRules.TituloValido(titulo);\n// Assert\nAssert.False(valido);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Evitar mocks por costumbre",
+          "explanation": "Un test de una regla de dominio no necesita mocks. Si probás que un service llama al repositorio exacto, podés terminar probando implementación en vez del comportamiento.",
+          "code": "dotnet test backend/Tickets.Tests/Tickets.Tests.csproj",
+          "language": "bash",
+          "insight": "La cobertura de líneas no mide la calidad de las verificaciones."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Escribí tres casos límite para el título",
+          "Probá que un comentario vacío se rechaza",
+          "Ejecutá dotnet test y observá fallos si cambiás una regla"
+        ],
+        "solution": "[Theory]\n[InlineData(\"ab\", false)]\n[InlineData(\"abc\", true)]\npublic void Titulo(string text, bool expected)\n    => Assert.Equal(expected, TicketRules.TituloValido(text));",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c16-p1",
+          "prompt": "¿Qué atributo de xUnit permite InlineData?",
+          "options": [
+            "Fact",
+            "Theory",
+            "Route",
+            "Required"
+          ],
+          "correct": 1,
+          "why": "Theory admite casos parametrizados como InlineData."
+        },
+        {
+          "id": "c16-p2",
+          "prompt": "¿Qué representa Assert?",
+          "options": [
+            "Preparar entradas",
+            "Ejecutar migraciones",
+            "Verificar el resultado",
+            "Crear mock externo"
+          ],
+          "correct": 2,
+          "why": "Assert comprueba si el resultado cumple lo esperado."
+        },
+        {
+          "id": "c16-p3",
+          "prompt": "¿Cuál prueba es más apropiada para una regla pura?",
+          "options": [
+            "Prueba unitaria sin DB",
+            "End-to-end obligatoria",
+            "Deploy a producción",
+            "Prueba con datos personales"
+          ],
+          "correct": 0,
+          "why": "Las reglas puras se verifican rápidamente sin infraestructura."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Pruebas de integración ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/test/integration-tests"
+        },
+        {
+          "label": "Guía de C#",
+          "url": "https://learn.microsoft.com/dotnet/csharp/"
+        }
+      ]
+    },
+    {
+      "id": "clase-17",
+      "number": 17,
+      "title": "Pruebas de integración con PostgreSQL real",
+      "module": "IV · Arquitectura y calidad",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Probá el pipeline HTTP y el comportamiento exacto de consultas y transacciones.",
+      "outcomes": [
+        "Usar WebApplicationFactory",
+        "Separar tests HTTP de DB",
+        "Entender Testcontainers"
+      ],
+      "sections": [
+        {
+          "heading": "Prueba de la API",
+          "explanation": "WebApplicationFactory inicia la API dentro del proceso de tests. Permite sustituir dependencias para probar validaciones y middleware.",
+          "code": "await using var factory = new WebApplicationFactory<Program>();\nusing var client = factory.CreateClient();\nvar response = await client.GetAsync(\"/api/tickets\");\nAssert.Equal(HttpStatusCode.OK, response.StatusCode);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Proveedor real para persistencia",
+          "explanation": "SQLite/InMemory difieren de PostgreSQL. Para verificar ILIKE, migraciones, concurrencia y SQL, conviene una DB PostgreSQL aislada, por ejemplo Testcontainers.",
+          "code": "docker compose up -d postgres\n# Para tests integrales: crear base por test suite, migrar, sembrar y limpiar.",
+          "language": "bash",
+          "insight": ""
+        },
+        {
+          "heading": "Seguridad y aislamiento",
+          "explanation": "Cada suite debe evitar usar la DB de desarrollo. Sembrá datos conocidos, cerrá el contenedor y verificá respuesta y efectos persistidos.",
+          "code": "// Arrange: crear ticket\n// Act: POST /api/tickets/{id}/comentarios\n// Assert: verificar HTTP 201 Y una fila en PostgreSQL",
+          "language": "text",
+          "insight": "Un mock de repositorio no verifica el SQL ni las restricciones de la DB."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Definí prueba de HTTP 400 con DTO inválido",
+          "Diseñá prueba de transacción que haga rollback",
+          "Identificá los datos de test que deben aislarse"
+        ],
+        "solution": "using var response = await client.PostAsJsonAsync(\"/api/tickets\", new { titulo = \"ab\" });\nAssert.Equal(HttpStatusCode.BadRequest, response.StatusCode);",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c17-p1",
+          "prompt": "¿Qué herramienta permite hacer requests a la app en pruebas?",
+          "options": [
+            "WebApplicationFactory",
+            "DbSet",
+            "dotnet ef",
+            "ILogger"
+          ],
+          "correct": 0,
+          "why": "WebApplicationFactory permite ejecutar pruebas HTTP del pipeline."
+        },
+        {
+          "id": "c17-p2",
+          "prompt": "¿Por qué usar PostgreSQL real para tests de SQL?",
+          "options": [
+            "Porque SQL es idéntico en todo motor",
+            "Por diferencias de proveedor y SQL",
+            "Para evitar assertions",
+            "Para tener pruebas más cortas siempre"
+          ],
+          "correct": 1,
+          "why": "SQLite e InMemory no reproducen todas las capacidades de PostgreSQL."
+        },
+        {
+          "id": "c17-p3",
+          "prompt": "¿Qué peligro tiene apuntar tests a la base de desarrollo?",
+          "options": [
+            "No compilar",
+            "Datos contaminados o borrados",
+            "No poder hacer SELECT",
+            "Cambiar .NET"
+          ],
+          "correct": 1,
+          "why": "Las pruebas deben aislarse de los datos normales."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Pruebas de integración ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/test/integration-tests"
+        },
+        {
+          "label": "Proveedor Npgsql EF Core",
+          "url": "https://www.npgsql.org/efcore/"
+        },
+        {
+          "label": "Entity Framework Core",
+          "url": "https://learn.microsoft.com/ef/core/"
+        }
+      ]
+    },
+    {
+      "id": "clase-18",
+      "number": 18,
+      "title": "Autenticación: JWT, claims y Keycloak",
+      "module": "V · Seguridad y escalabilidad",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Separá identidad de permisos y verificá tokens firmados mediante un proveedor externo.",
+      "outcomes": [
+        "Comprender Bearer tokens",
+        "Configurar Authority y Audience",
+        "Examinar claims de usuario"
+      ],
+      "sections": [
+        {
+          "heading": "Identidad vs permisos",
+          "explanation": "Autenticación responde quién llama. Autorización decide qué acciones puede ejecutar. Nunca confíes en claims escritos por el cliente sin validar la firma y el emisor.",
+          "code": "builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)\n    .AddJwtBearer(o =>\n    {\n        o.Authority = config[\"Auth:Authority\"];\n        o.Audience = config[\"Auth:Audience\"];\n    });",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Middleware",
+          "explanation": "UseAuthentication crea un principal validado y UseAuthorization aplica políticas. Su orden es relevante; ejecutalos antes de MapControllers.",
+          "code": "app.UseAuthentication();\napp.UseAuthorization();\napp.MapControllers();",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Keycloak y roles",
+          "explanation": "Keycloak puede emitir tokens OIDC/JWT. Configurá los mapeos de roles/claims según el realm y el cliente; no supongas que todas las identidades emiten Role de forma idéntica.",
+          "code": "[Authorize]\n[HttpPost]\npublic Task<IActionResult> Crear(...) { /* ... */ }",
+          "language": "csharp",
+          "insight": "No coloqués claves privadas de firma JWT en el frontend ni deshabilités validación de issuer/audience."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Identificá Authority y Audience de un realm de prueba",
+          "Explicá diferencia entre 401 y 403",
+          "Anotá un plan para proteger POST /api/tickets"
+        ],
+        "solution": "// Requiere agregar el paquete Microsoft.AspNetCore.Authentication.JwtBearer\n// y conectar un proveedor de identidad real.\n[Authorize]\npublic class TicketsController : ControllerBase { }",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c18-p1",
+          "prompt": "¿Qué indica un 401 en un endpoint protegido?",
+          "options": [
+            "Identidad válida sin permiso",
+            "No autenticado correctamente",
+            "Éxito sin cuerpo",
+            "Error SQL"
+          ],
+          "correct": 1,
+          "why": "401 indica que falta una autenticación aceptable para el recurso."
+        },
+        {
+          "id": "c18-p2",
+          "prompt": "¿Qué propiedad valida a qué API va dirigido el token?",
+          "options": [
+            "Audience",
+            "Port",
+            "Migration",
+            "Environment"
+          ],
+          "correct": 0,
+          "why": "La audiencia identifica al receptor esperado del token."
+        },
+        {
+          "id": "c18-p3",
+          "prompt": "¿Cuál es el orden de middleware habitual?",
+          "options": [
+            "Authorization antes de Authentication",
+            "Authentication luego Authorization",
+            "MapControllers luego Authentication",
+            "No importa"
+          ],
+          "correct": 1,
+          "why": "Primero se establece identidad, después se evalúan permisos."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Autenticación ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/security/authentication/"
+        },
+        {
+          "label": "Autenticación JWT Bearer",
+          "url": "https://learn.microsoft.com/aspnet/core/security/authentication/configure-jwt-bearer-authentication"
+        }
+      ]
+    },
+    {
+      "id": "clase-19",
+      "number": 19,
+      "title": "Autorización por políticas y por recurso",
+      "module": "V · Seguridad y escalabilidad",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Construí permisos más expresivos que un único rol admin y evitá acceso horizontal indebido.",
+      "outcomes": [
+        "Crear policies con claims",
+        "Usar Resource-Based Authorization",
+        "Evitar IDOR/BOLA"
+      ],
+      "sections": [
+        {
+          "heading": "Policies",
+          "explanation": "Las políticas expresan requisitos de claims y pueden usarse con [Authorize(Policy=...)]. Debés definir claramente quién otorga cada claim.",
+          "code": "builder.Services.AddAuthorization(o =>\n{\n    o.AddPolicy(\"Tickets.Write\", p =>\n        p.RequireClaim(\"permission\", \"tickets.write\"));\n});",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Autorización por recurso",
+          "explanation": "Un usuario puede tener permiso para editar tickets propios pero no ajenos. Antes de modificar, recuperá la entidad y verificá la relación de propiedad o asignación.",
+          "code": "var ticket = await db.Tickets.FindAsync([id], ct);\nif (ticket is null) return NotFound();\nvar allowed = await authorization.AuthorizeAsync(User, ticket, \"EditarTicket\");\nif (!allowed.Succeeded) return Forbid();",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "IDOR / BOLA",
+          "explanation": "No confíes en UsuarioId del body como fuente del actor. Derivalo de claims validados; filtrá o autorizá acceso a cada recurso.",
+          "code": "var usuarioId = User.FindFirst(\"sub\")?.Value;\n// Verificar en servidor si puede acceder al ticket solicitado.",
+          "language": "csharp",
+          "insight": "Ocultar un botón en React no reemplaza autorización en la API."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Definí un permiso tickets.read y otro tickets.write",
+          "Diseñá política para dueño del ticket",
+          "Identificá un endpoint vulnerable a IDOR"
+        ],
+        "solution": "builder.Services.AddAuthorization(o => o.AddPolicy(\"Tickets.Write\", p => p.RequireClaim(\"permission\", \"tickets.write\")));",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c19-p1",
+          "prompt": "¿Qué devuelve usualmente una API cuando la identidad es válida pero carece de permiso?",
+          "options": [
+            "201",
+            "403",
+            "401 siempre",
+            "304"
+          ],
+          "correct": 1,
+          "why": "403 indica que la acción está prohibida para un usuario autenticado."
+        },
+        {
+          "id": "c19-p2",
+          "prompt": "¿Qué vulnerabilidad aparece cuando se accede a tickets ajenos por ID?",
+          "options": [
+            "BOLA/IDOR",
+            "SQL ORDER BY",
+            "N+1",
+            "Dead code"
+          ],
+          "correct": 0,
+          "why": "BOLA/IDOR consiste en falta de verificación de autorización a nivel objeto."
+        },
+        {
+          "id": "c19-p3",
+          "prompt": "¿Puede React hacer cumplir permisos del servidor?",
+          "options": [
+            "Sí con ocultar botones",
+            "Solo CSS",
+            "No",
+            "Solo con localStorage"
+          ],
+          "correct": 2,
+          "why": "La autorización debe verificarse en el backend."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Autorización ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/security/authorization/"
+        },
+        {
+          "label": "OWASP API Top 10",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0x11-t10/"
+        }
+      ]
+    },
+    {
+      "id": "clase-20",
+      "number": 20,
+      "title": "Concurrencia optimista y versionado",
+      "module": "V · Seguridad y escalabilidad",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Gestioná ediciones simultáneas sin sobrescribir cambios silenciosamente.",
+      "outcomes": [
+        "Usar tokens de concurrencia",
+        "Interpretar DbUpdateConcurrencyException",
+        "Diseñar conflictos HTTP 409"
+      ],
+      "sections": [
+        {
+          "heading": "Versionado optimista",
+          "explanation": "Guardá una versión en la entidad y marcala como token de concurrencia. Para concurrencia portable, incrementá explícitamente la versión de forma segura o usá un token administrado por la DB.",
+          "code": "modelBuilder.Entity<Ticket>()\n    .Property(t => t.Version)\n    .IsConcurrencyToken();",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Detección",
+          "explanation": "En la actualización EF incluye el valor original del token en la condición del UPDATE. Si ninguna fila coincide, arroja DbUpdateConcurrencyException.",
+          "code": "try\n{\n    await db.SaveChangesAsync(ct);\n}\ncatch (DbUpdateConcurrencyException)\n{\n    // Recuperar estado actual y devolver conflicto 409.\n}",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "PostgreSQL y xmin",
+          "explanation": "Npgsql permite usar el xmin de PostgreSQL como token de concurrencia. Es específico del proveedor y requiere configurar correctamente el mapeo y los valores expuestos a clientes.",
+          "code": "// Diseñar DTO con Version/ETag;\n// exigir versión original en PUT/PATCH.\n// Evitar UPDATE sin verificar cambios ajenos.",
+          "language": "text",
+          "insight": "Un token de concurrencia no sustituye las restricciones únicas de PostgreSQL ni la idempotencia."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Agregá una propiedad Version al modelo de laboratorio",
+          "Dibujá secuencia con dos usuarios editando el mismo ticket",
+          "Definí respuesta HTTP de conflicto y estrategia de reintento"
+        ],
+        "solution": "catch (DbUpdateConcurrencyException)\n{\n    return Conflict(new { message = \"El ticket fue modificado por otra persona\" });\n}",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c20-p1",
+          "prompt": "¿Qué indica DbUpdateConcurrencyException en un UPDATE con token?",
+          "options": [
+            "Fallo de compilación",
+            "No coincidió la versión original",
+            "Cambio de route",
+            "No se pudo usar LINQ"
+          ],
+          "correct": 1,
+          "why": "EF detecta que la versión original no coincide con las filas actualizables."
+        },
+        {
+          "id": "c20-p2",
+          "prompt": "¿Qué código HTTP representa un conflicto de edición?",
+          "options": [
+            "201",
+            "204",
+            "409",
+            "422 exclusivamente"
+          ],
+          "correct": 2,
+          "why": "409 comunica un conflicto con el estado del recurso."
+        },
+        {
+          "id": "c20-p3",
+          "prompt": "¿Qué problema NO resuelve por sí solo una versión de entidad?",
+          "options": [
+            "Lost updates",
+            "Cambios concurrentes",
+            "Reintentos POST duplicados",
+            "Detección de versiones viejas"
+          ],
+          "correct": 2,
+          "why": "Los POST repetidos necesitan controles de idempotencia independientes."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Concurrencia EF Core",
+          "url": "https://learn.microsoft.com/ef/core/saving/concurrency"
+        },
+        {
+          "label": "Proveedor Npgsql EF Core",
+          "url": "https://www.npgsql.org/efcore/"
+        },
+        {
+          "label": "Entity Framework Core",
+          "url": "https://learn.microsoft.com/ef/core/"
+        }
+      ]
+    },
+    {
+      "id": "clase-21",
+      "number": 21,
+      "title": "Seguridad aplicada y validación defensiva",
+      "module": "V · Seguridad y escalabilidad",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Endurecé endpoints públicos, permisos y entradas contra problemas comunes de APIs.",
+      "outcomes": [
+        "Validar tamaño y forma",
+        "Prevenir mass assignment",
+        "Revisar CORS, secrets y rate limits"
+      ],
+      "sections": [
+        {
+          "heading": "Confianza mínima",
+          "explanation": "Validación HTTP no reemplaza invariantes del dominio ni constraints de DB. Rechazá entrada excesiva y no expongas stack traces al cliente.",
+          "code": "public sealed record CrearTicketRequest(\n    [property: Required, MinLength(3), MaxLength(200)] string Titulo);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Rate limiting y CORS",
+          "explanation": "Configurar límite por cliente protege capacidad. CORS regula navegadores, no autentica ni limita scripts del servidor.",
+          "code": "builder.Services.AddRateLimiter(o =>\n{\n    o.AddFixedWindowLimiter(\"api\", x =>\n    {\n        x.PermitLimit = 60;\n        x.Window = TimeSpan.FromMinutes(1);\n        x.QueueLimit = 0;\n    });\n});",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Auditoría y secretos",
+          "explanation": "Auditá quién hizo qué y cuándo sin almacenar contraseñas ni tokens. Variables sensibles viven fuera del repo y respaldos deben probarse.",
+          "code": "// Guardar actor desde User.Identity/claims verificados\n// y correlacionarlo con ticket.Id + fecha UTC.",
+          "language": "text",
+          "insight": "CORS no es un sistema de seguridad para tokens: la autenticación y autorización pertenecen al backend."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Enumerá tres campos que nunca registrarías",
+          "Diseñá una auditoría de resolución de ticket",
+          "Identificá qué endpoints requieren rate limiting"
+        ],
+        "solution": "builder.Services.AddRateLimiter(options => options.AddFixedWindowLimiter(\"api\", o => { o.PermitLimit=60; o.Window=TimeSpan.FromMinutes(1); }));\napp.UseRateLimiter();",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c21-p1",
+          "prompt": "¿Qué controla CORS principalmente?",
+          "options": [
+            "Autenticación del servidor",
+            "Acceso cross-origin de navegadores",
+            "Permisos de DB",
+            "Todos los clientes HTTP"
+          ],
+          "correct": 1,
+          "why": "CORS es un mecanismo del navegador, no reemplaza auth."
+        },
+        {
+          "id": "c21-p2",
+          "prompt": "¿Dónde debe comprobarse autorización por ticket?",
+          "options": [
+            "Solo UI",
+            "Servicio o backend antes de operar",
+            "En CSS",
+            "En un README"
+          ],
+          "correct": 1,
+          "why": "El backend debe verificar cada acción sensible."
+        },
+        {
+          "id": "c21-p3",
+          "prompt": "¿Qué protege una restricción UNIQUE en PostgreSQL?",
+          "options": [
+            "Integridad de datos bajo concurrencia",
+            "Token JWT",
+            "CSRF automáticamente",
+            "Cache distribuida"
+          ],
+          "correct": 0,
+          "why": "Una restricción UNIQUE se verifica en la base incluso con peticiones simultáneas."
+        }
+      ],
+      "resources": [
+        {
+          "label": "OWASP API Top 10",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0x11-t10/"
+        },
+        {
+          "label": "ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/"
+        },
+        {
+          "label": "Documentación PostgreSQL",
+          "url": "https://www.postgresql.org/docs/current/"
+        }
+      ]
+    },
+    {
+      "id": "clase-22",
+      "number": 22,
+      "title": "Índices, rendimiento y profiling de SQL",
+      "module": "V · Seguridad y escalabilidad",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Diagnosticá consultas lentas en vez de optimizar a ciegas.",
+      "outcomes": [
+        "Leer EXPLAIN ANALYZE",
+        "Elegir índices por patrones de consulta",
+        "Reducir resultados y round trips"
+      ],
+      "sections": [
+        {
+          "heading": "Consulta vs plan",
+          "explanation": "Antes de indexar, obtené SQL representativo con ToQueryString y analizá con EXPLAIN (ANALYZE, BUFFERS) en una DB de prueba.",
+          "code": "EXPLAIN (ANALYZE, BUFFERS)\nSELECT id, titulo FROM tickets\nWHERE resuelto = false\nORDER BY id DESC LIMIT 20;",
+          "language": "sql",
+          "insight": ""
+        },
+        {
+          "heading": "Índice compuesto",
+          "explanation": "Un índice útil depende de selectividad, filtros y orden. El costo de escribir índices también existe; no indexés todo.",
+          "code": "CREATE INDEX ix_tickets_pendientes_id\nON tickets (id DESC)\nWHERE resuelto = false;",
+          "language": "sql",
+          "insight": ""
+        },
+        {
+          "heading": "ILIKE y pg_trgm",
+          "explanation": "ILIKE con %texto% puede ser lento con B-tree tradicional. Para búsquedas de subcadenas, estudiá GIN trigram y medí el plan.",
+          "code": "CREATE EXTENSION IF NOT EXISTS pg_trgm;\nCREATE INDEX ix_tickets_titulo_trgm\nON tickets USING gin (titulo gin_trgm_ops);",
+          "language": "sql",
+          "insight": "Para consultas frecuentes, observá número de filas, memoria y viajes a DB antes de cachear."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Compará plan de una consulta antes/después de índice",
+          "Probá búsqueda ILIKE con patrón de subcadena",
+          "Medí la diferencia de proyección a DTO"
+        ],
+        "solution": "EXPLAIN (ANALYZE, BUFFERS) SELECT id,titulo FROM tickets WHERE resuelto=false ORDER BY id DESC LIMIT 20;",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c22-p1",
+          "prompt": "¿Qué muestra EXPLAIN ANALYZE?",
+          "options": [
+            "Plan y ejecución de consulta",
+            "Dependencias NuGet",
+            "Claims JWT",
+            "Archivos de build"
+          ],
+          "correct": 0,
+          "why": "EXPLAIN ANALYZE ejecuta y reporta plan y métricas de la consulta."
+        },
+        {
+          "id": "c22-p2",
+          "prompt": "¿Qué suele ayudar con ILIKE %texto% sobre tabla grande?",
+          "options": [
+            "pg_trgm con índice adecuado",
+            "Solo B-tree del ID",
+            "Más Include",
+            "Sin filtros"
+          ],
+          "correct": 0,
+          "why": "Trigram permite indexar ciertas búsquedas por subcadena."
+        },
+        {
+          "id": "c22-p3",
+          "prompt": "¿Cuál es un costo de agregar índices?",
+          "options": [
+            "Más escrituras y almacenamiento",
+            "Eliminar JOIN",
+            "Deshabilitar SQL",
+            "No tener ACID"
+          ],
+          "correct": 0,
+          "why": "Los índices requieren espacio y mantenimiento en escrituras."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Rendimiento EF Core",
+          "url": "https://learn.microsoft.com/ef/core/performance/efficient-querying"
+        },
+        {
+          "label": "Documentación PostgreSQL",
+          "url": "https://www.postgresql.org/docs/current/"
+        },
+        {
+          "label": "Proveedor Npgsql EF Core",
+          "url": "https://www.npgsql.org/efcore/"
+        }
+      ]
+    },
+    {
+      "id": "clase-23",
+      "number": 23,
+      "title": "Jobs, IHostedService y patrón Outbox",
+      "module": "V · Seguridad y escalabilidad",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Sacá tareas pesadas del request sin perder eventos cuando falle un proceso.",
+      "outcomes": [
+        "Implementar BackgroundService",
+        "Comprender colas y brokers",
+        "Diseñar Outbox transaccional"
+      ],
+      "sections": [
+        {
+          "heading": "Worker hospedado",
+          "explanation": "BackgroundService ejecuta tareas fuera de los controllers. El servicio es singleton: para usar DbContext creá scopes mediante IServiceScopeFactory.",
+          "code": "public class TicketWorker(IServiceScopeFactory scopeFactory) : BackgroundService\n{\n    protected override async Task ExecuteAsync(CancellationToken stoppingToken)\n    {\n        using var scope = scopeFactory.CreateScope();\n        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();\n        await Task.Delay(1000, stoppingToken);\n    }\n}",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "RabbitMQ y desacoplamiento",
+          "explanation": "Los mensajes permiten procesar notificaciones y trabajos posteriormente. Un broker introduce entrega al menos una vez en muchos sistemas: los consumidores necesitan idempotencia.",
+          "code": "// Evento ilustrativo\npublic record TicketCreado(int TicketId, DateTimeOffset OcurrioEn);",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Outbox",
+          "explanation": "En la misma transacción que inserta el ticket, insertá un evento pendiente en Outbox. Un worker publicará luego y marcará estado; evita perder mensajes entre commit y envío.",
+          "code": "BEGIN;\nINSERT INTO tickets (...) VALUES (...);\nINSERT INTO outbox (tipo, payload) VALUES ('TicketCreado', '{}');\nCOMMIT;",
+          "language": "sql",
+          "insight": "Publicar a RabbitMQ antes del commit puede anunciar un ticket que luego se revierte."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Dibujá el flujo TicketCreado → Outbox → Worker",
+          "Definí campo de deduplicación en consumidor",
+          "Explicá por qué un BackgroundService necesita un scope para DbContext"
+        ],
+        "solution": "// Crear ticket y outbox en el mismo DbContext; SaveChangesAsync una vez.\n// El worker consulta eventos pendientes y los publica de forma idempotente.",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c23-p1",
+          "prompt": "¿Qué ciclo de vida tiene normalmente un HostedService?",
+          "options": [
+            "Scoped",
+            "Singleton",
+            "Transient por request",
+            "Por controlador"
+          ],
+          "correct": 1,
+          "why": "Los servicios hospedados se registran como singleton."
+        },
+        {
+          "id": "c23-p2",
+          "prompt": "¿Qué resuelve principalmente Outbox?",
+          "options": [
+            "Atomicidad entre dato y registro del evento",
+            "Seguridad CORS",
+            "Generar DTOs",
+            "Bloquear toda concurrencia"
+          ],
+          "correct": 0,
+          "why": "El evento queda guardado junto con el cambio de negocio."
+        },
+        {
+          "id": "c23-p3",
+          "prompt": "¿Qué debe tolerar un consumidor bajo entrega repetida?",
+          "options": [
+            "Duplicados",
+            "Solo CSS",
+            "Errores de compilación",
+            "Orden siempre perfecto"
+          ],
+          "correct": 0,
+          "why": "Los consumidores deben ser idempotentes ante reentregas."
+        }
+      ],
+      "resources": [
+        {
+          "label": "Background tasks ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/fundamentals/host/hosted-services"
+        },
+        {
+          "label": "Transacciones EF Core",
+          "url": "https://learn.microsoft.com/ef/core/saving/transactions"
+        },
+        {
+          "label": "ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/"
+        }
+      ]
+    },
+    {
+      "id": "clase-24",
+      "number": 24,
+      "title": "Caching, resiliencia y servicios externos",
+      "module": "V · Seguridad y escalabilidad",
+      "duration": 35,
+      "level": "Intermedio",
+      "lead": "Gestioná dependencias lentas sin esconder errores ni romper consistencia.",
+      "outcomes": [
+        "Seleccionar cache por escenario",
+        "Usar HttpClientFactory",
+        "Definir políticas de timeout y reintento"
+      ],
+      "sections": [
+        {
+          "heading": "Cache no es fuente de verdad",
+          "explanation": "Cachear GET puede ahorrar consultas, pero una actualización exige invalidar o versionar. No cacheés datos protegidos con clave compartida sin alcance por usuario.",
+          "code": "builder.Services.AddMemoryCache();\nvar items = await cache.GetOrCreateAsync(\"tickets:resumen\", async e =>\n{\n    e.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);\n    return await service.ObtenerResumenAsync();\n});",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "HttpClientFactory",
+          "explanation": "Evitá instanciar HttpClient sin estrategia de vida/conexiones en cada petición. Usá clientes tipados o con nombre y una política de timeouts.",
+          "code": "builder.Services.AddHttpClient(\"pagos\", client =>\n{\n    client.BaseAddress = new Uri(\"https://api.example.invalid/\");\n    client.Timeout = TimeSpan.FromSeconds(10);\n});",
+          "language": "csharp",
+          "insight": ""
+        },
+        {
+          "heading": "Reintentos seguros",
+          "explanation": "Reintentá errores transitorios solo cuando la operación sea segura o tenga una clave idempotente. No hagás retry ciego de una compra.",
+          "code": "// GET idempotente: reintento controlado.\n// POST externo de pago: idempotency-key + reconciliación.",
+          "language": "text",
+          "insight": "El caché en memoria se pierde al reiniciar y no se comparte entre múltiples réplicas."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Definí una clave de cache para lista pública",
+          "Definí cuándo invalidarla",
+          "Redactá política para timeout de servicio externo"
+        ],
+        "solution": "builder.Services.AddHttpClient(\"externo\", c => c.Timeout = TimeSpan.FromSeconds(8));",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c24-p1",
+          "prompt": "¿Cuál es un riesgo de IMemoryCache con varias réplicas?",
+          "options": [
+            "Estado no compartido entre instancias",
+            "SQL se deshabilita",
+            "No puede cachear strings",
+            "Cambia C#"
+          ],
+          "correct": 0,
+          "why": "La memoria de cada instancia es independiente."
+        },
+        {
+          "id": "c24-p2",
+          "prompt": "¿Qué aporta IHttpClientFactory?",
+          "options": [
+            "Gestiona configuración/handlers de clientes",
+            "Crea migraciones",
+            "Valida JWT solo",
+            "Genera DTOs"
+          ],
+          "correct": 0,
+          "why": "Centraliza instancias, configuración y ciclo de conexiones HTTP."
+        },
+        {
+          "id": "c24-p3",
+          "prompt": "¿Cuándo es peligrosa una política de retry?",
+          "options": [
+            "GET de lectura",
+            "POST de pago sin idempotencia",
+            "Query SELECT simple",
+            "Ping"
+          ],
+          "correct": 1,
+          "why": "Reintentos de operaciones con efectos pueden duplicar acciones."
+        }
+      ],
+      "resources": [
+        {
+          "label": "ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/"
+        },
+        {
+          "label": "Transacciones EF Core",
+          "url": "https://learn.microsoft.com/ef/core/saving/transactions"
+        }
+      ]
+    },
+    {
+      "id": "clase-25",
+      "number": 25,
+      "title": "Docker y despliegue reproducible",
+      "module": "VI · Entrega empresarial",
+      "duration": 45,
+      "level": "Intermedio",
+      "lead": "Contenerizá la API .NET y ejecutá PostgreSQL con persistencia independiente.",
+      "outcomes": [
+        "Construir Dockerfile multietapa",
+        "Separar configuración de imagen",
+        "Usar Compose para desarrollo"
+      ],
+      "sections": [
+        {
+          "heading": "Build multietapa",
+          "explanation": "Una etapa SDK compila, otra con runtime ejecuta. No copies credenciales ni carpeta .git a la imagen.",
+          "code": "FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build\nWORKDIR /src\nCOPY . .\nRUN dotnet publish Tickets.Api/Tickets.Api.csproj -c Release -o /app\nFROM mcr.microsoft.com/dotnet/aspnet:10.0\nWORKDIR /app\nCOPY --from=build /app .\nENTRYPOINT [\"dotnet\", \"Tickets.Api.dll\"]",
+          "language": "dockerfile",
+          "insight": ""
+        },
+        {
+          "heading": "Docker Compose",
+          "explanation": "PostgreSQL necesita un volumen persistente y healthcheck. Dentro de la red de Compose, el host de DB es postgres (no localhost).",
+          "code": "services:\n  postgres:\n    image: postgres:17\n    environment:\n      POSTGRES_DB: tickets_db\n      POSTGRES_USER: tickets\n      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}\n    volumes: [pgdata:/var/lib/postgresql/data]\nvolumes: {pgdata: {}}",
+          "language": "yaml",
+          "insight": ""
+        },
+        {
+          "heading": "Migraciones y salud",
+          "explanation": "Aplicá migraciones como paso controlado antes de desplegar nuevas réplicas. Agregá healthchecks separados para vida y disponibilidad de dependencias.",
+          "code": "dotnet ef database update --project backend/Tickets.Api\ndocker compose up -d --build",
+          "language": "bash",
+          "insight": "La imagen puede ser inmutable; la configuración cambia por variables/secretos."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Levantá PostgreSQL con compose",
+          "Construí imagen de referencia de Tickets.Api",
+          "Explicá por qué el host DB no es localhost desde el contenedor"
+        ],
+        "solution": "docker compose up -d postgres\n# docker build -f backend/Tickets.Api/Dockerfile backend/",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c25-p1",
+          "prompt": "¿Qué aporta un Dockerfile multietapa?",
+          "options": [
+            "Separar compilación de runtime",
+            "Aumentar secretos",
+            "Eliminar PostgreSQL",
+            "Hacer tests manuales"
+          ],
+          "correct": 0,
+          "why": "Permite imagen final sin el SDK de compilación."
+        },
+        {
+          "id": "c25-p2",
+          "prompt": "¿Qué host usa API dentro de Compose para conectarse al servicio postgres?",
+          "options": [
+            "localhost",
+            "postgres",
+            "127.0.0.1 siempre",
+            "el nombre del Dockerfile"
+          ],
+          "correct": 1,
+          "why": "Compose resuelve servicios por nombre en su red."
+        },
+        {
+          "id": "c25-p3",
+          "prompt": "¿Dónde debe persistir PostgreSQL en Docker?",
+          "options": [
+            "Solo capa efímera",
+            "Volumen persistente",
+            "Imagen frontend",
+            "En Program.cs"
+          ],
+          "correct": 1,
+          "why": "Un volumen persiste los datos fuera del ciclo de vida del contenedor."
+        }
+      ],
+      "resources": [
+        {
+          "label": ".NET en contenedores",
+          "url": "https://learn.microsoft.com/dotnet/core/docker/introduction"
+        },
+        {
+          "label": "Publicación ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/host-and-deploy/"
+        }
+      ]
+    },
+    {
+      "id": "clase-26",
+      "number": 26,
+      "title": "CI/CD, seguridad operativa y proyecto final",
+      "module": "VI · Entrega empresarial",
+      "duration": 60,
+      "level": "Avanzado",
+      "lead": "Cerrá el recorrido con un sistema que podás presentar, probar y desplegar con criterio empresarial.",
+      "outcomes": [
+        "Diseñar pipeline de CI",
+        "Definir criterios de aceptación",
+        "Preparar entrega y operación"
+      ],
+      "sections": [
+        {
+          "heading": "Pipeline mínimo",
+          "explanation": "En cada PR: restaurar, compilar, ejecutar tests, revisar formato y analizar seguridad de dependencias. La CD agrega artefactos versionados y controles del entorno.",
+          "code": "name: dotnet-ci\non: [push, pull_request]\njobs:\n  api:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-dotnet@v4\n        with:\n          dotnet-version: 10.0.x\n      - run: dotnet test backend/Tickets.Tests/Tickets.Tests.csproj --configuration Release",
+          "language": "yaml",
+          "insight": ""
+        },
+        {
+          "heading": "Criterios del capstone",
+          "explanation": "API con usuarios, tickets, comentarios, estados, filtros paginados, claims, permisos por recurso, concurrencia, auditoría, fallos seguros, tests, observabilidad y PostgreSQL.",
+          "code": "GET /api/tickets?resuelto=false&pagina=1\nPOST /api/tickets\nPOST /api/tickets/{id}/comentarios\nPUT /api/tickets/{id}\nGET /api/usuarios",
+          "language": "http",
+          "insight": ""
+        },
+        {
+          "heading": "Operar el software",
+          "explanation": "Entrega empresarial incluye runbook de incidentes, backups restaurables, migraciones revisadas, secretos rotables, healthchecks y métricas de errores/latencia.",
+          "code": "Checklist final:\n[ ] CI verde\n[ ] Integración PostgreSQL aprobada\n[ ] API protegida\n[ ] Backups probados\n[ ] Errores/latencia observables\n[ ] Runbook de despliegue y rollback",
+          "language": "text",
+          "insight": "El código que acompaña la plataforma es un punto de partida funcional, no sustituye completar todos los requisitos de seguridad y operación del capstone."
+        }
+      ],
+      "lab": {
+        "title": "Laboratorio guiado",
+        "tasks": [
+          "Completá el documento docs/CAPSTONE.md",
+          "Ejecutá pruebas y consultá /health",
+          "Diseñá un pipeline que falle si un test falla"
+        ],
+        "solution": "dotnet test backend/Tickets.Tests/Tickets.Tests.csproj\n# Revisar docs/CAPSTONE.md para completar funcionalidades de producción.",
+        "instructions": "Implementá los cambios en backend/Tickets.Api y probalos con dotnet test o curl. Revisá la solución después de intentarlo."
+      },
+      "quiz": [
+        {
+          "id": "c26-p1",
+          "prompt": "¿Qué debería impedir desplegar un cambio con tests fallidos?",
+          "options": [
+            "Pipeline de CI/CD",
+            "Un controller",
+            "User Secrets",
+            "Un record"
+          ],
+          "correct": 0,
+          "why": "La pipeline debe actuar como puerta de calidad."
+        },
+        {
+          "id": "c26-p2",
+          "prompt": "¿Qué práctica verifica que un backup realmente funciona?",
+          "options": [
+            "Tener un archivo zip",
+            "Restaurarlo periódicamente en entorno aislado",
+            "Mostrar su tamaño",
+            "Guardar contraseña en README"
+          ],
+          "correct": 1,
+          "why": "Un backup sin prueba de restauración puede ser inutilizable."
+        },
+        {
+          "id": "c26-p3",
+          "prompt": "¿Qué define una entrega empresarial completa?",
+          "options": [
+            "Solo compilar",
+            "Solo endpoint GET",
+            "Código, pruebas, seguridad, operación y despliegue",
+            "Solo una UI bonita"
+          ],
+          "correct": 2,
+          "why": "El valor empresarial incluye calidad, mantenimiento y operación."
+        }
+      ],
+      "resources": [
+        {
+          "label": "GitHub Actions para .NET",
+          "url": "https://docs.github.com/en/actions/how-tos/use-cases-and-examples/building-and-testing/building-and-testing-net"
+        },
+        {
+          "label": "Publicación ASP.NET Core",
+          "url": "https://learn.microsoft.com/aspnet/core/host-and-deploy/"
+        },
+        {
+          "label": "OWASP API Top 10",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0x11-t10/"
+        }
+      ]
+    }
+  ],
+  "capstone": {
+    "name": "Entrega final · Mesa de ayuda empresarial",
+    "description": "Construí un sistema de tickets apto para presentar en una revisión técnica. El backend incluido sirve como referencia incremental; los puntos de seguridad/operación son tareas del proyecto final, no capacidades desplegadas automáticamente.",
+    "acceptance": [
+      "Crear, consultar, actualizar y cerrar tickets con validación y DTOs.",
+      "Asignar usuarios y agregar comentarios relacionados con FK reales.",
+      "Filtrar y paginar eficientemente con orden estable y SQL verificable.",
+      "Proteger endpoints con JWT real, políticas y autorización por recurso.",
+      "Evitar modificaciones perdidas mediante concurrencia optimista.",
+      "Evitar duplicados en operaciones reintentadas con clave idempotente.",
+      "Registrar auditoría, eventos con Outbox y logs correlacionados.",
+      "Probar reglas con xUnit y persistencia con PostgreSQL aislado.",
+      "Publicar con Docker, CI, migraciones revisadas y secretos externos.",
+      "Documentar arquitectura, decisiones, rendimiento y plan de rollback."
+    ],
+    "deliverables": [
+      "API .NET 10 en PostgreSQL",
+      "Suite de pruebas y resultados CI",
+      "Colección de ejemplos HTTP",
+      "Diagrama de arquitectura y ADR",
+      "Runbook de despliegue + rollback"
+    ]
+  },
+  "modules": [
+    "I · Lenguaje y plataforma",
+    "II · ASP.NET Core",
+    "III · Datos y LINQ",
+    "IV · Arquitectura y calidad",
+    "V · Seguridad y escalabilidad",
+    "VI · Entrega empresarial"
+  ]
+}
