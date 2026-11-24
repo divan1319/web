@@ -39,3 +39,196 @@
 .application-copy{color:#4d6584;padding-left:13px;border-left:3px solid #9acdb9}
 .definition-copy strong,.application-copy strong{color:#314a74}
 @media(max-width:760px){.lesson-index-links{grid-template-columns:1fr}}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.theme-toggle:hover { border-color: #8a9bc5; }
+
+@media (max-width: 480px) {
+  .topbar-right { display: flex; }
+  .env-pill { display: none; }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --navy: #111b2e;
+  --ink: #e9eff9;
+  --muted: #a3b2c9;
+  --surface: #0e1627;
+  --line: #2c3c55;
+  --shadow: 0 14px 42px #05091433;
+  --panel: #162237;
+  --panel-raised: #1c2a42;
+  --control-border: #465b7a;
+  --body-text: #c2cee1;
+  --accent-text: #b3c2ff;
+  --accent-surface: #28365a;
+  --success-text: #95e3c2;
+  --success-surface: #193b35;
+  --success-border: #3d806d;
+  --warning-text: #f4c58d;
+  --warning-surface: #483322;
+  --danger-text: #ffb1be;
+  --danger-surface: #472b3c;
+  --danger-border: #9b596b;
+}
+
+[data-theme="dark"] :is(
+  .topbar, .stat-card, .continue-card, .module-card, .footer, .lesson-header,
+  .reading-panel, .rail-card, .quiz-option, .acceptance-list, .deliver-card,
+  .glossary-filter, .glossary-item, .settings-card, .play-control, .play-output,
+  .lesson-index-links button, .table-pager button, .attempt-history span, .course-file-list code
+) {
+  background: var(--panel);
+  border-color: var(--line);
+}
+
+[data-theme="dark"] .acceptance-item { background: var(--panel); }
+
+[data-theme="dark"] :is(
+  .env-pill, .db-pill, .lesson-intro, .lesson-index, .attempt-history,
+  .notes-card textarea, .play-control input, .play-control select, .btn-outline
+) {
+  background: var(--panel-raised);
+  border-color: var(--line);
+}
+
+[data-theme="dark"] :is(
+  .round-arrow, .reading-section, .resource-link, .solution-area, .quiz-question,
+  .acceptance-item, .play-table, .play-table th, .play-table td
+) { border-color: var(--line); }
+
+[data-theme="dark"] :is(
+  .task, .task-checkbox, .rail-step span, .option-letter, .quiz-option,
+  .notes-card textarea, .play-control input, .play-control select, .btn-outline,
+  .theme-toggle, .table-pager button
+) { border-color: var(--control-border); }
+
+[data-theme="dark"] :is(
+  .crumb strong, .menu-button, .continue-card, .module-card, .rail-foot b,
+  .notes-card textarea, .glossary-filter input, .play-control input,
+  .play-control select, .table-pager button
+) { color: var(--ink); }
+
+[data-theme="dark"] :is(
+  .crumb, .env-pill, .db-pill, .intro-strip, .stat-sub, .continue-body p,
+  .continue-meta, .subtle-label, .module-count, .module-card p, .module-card-bottom,
+  .bottom-note p, .footer, .back-link, .lesson-position, .lesson-header p,
+  .lesson-chips, .tab-bar button, .rail-step p, .rail-foot, .notes-card p,
+  .task-progress, .solution-area > p, .option-letter, .quiz-result p, .page-top p,
+  .deliver-card small, .glossary-filter, .glossary-item p, .settings-card p,
+  .play-table-title span, .play-table thead, .no-results, .table-pager, .loading,
+  .acceptance-progress, .attempt-history span, .lesson-index summary span,
+  .lesson-index-links button span
+) { color: var(--muted); }
+
+[data-theme="dark"] :is(
+  .summary-list li, .body-copy, .rail-title, .task, .quiz-option, .acceptance-item p,
+  .play-control label, .attempt-history > strong, .course-path p, .lesson-tips,
+  .lesson-index-links button
+) { color: var(--body-text); }
+
+[data-theme="dark"] :is(
+  .btn-outline, .overline, .text-link, .continue-kicker, .round-arrow, .tab-bar button.active,
+  .block-eyebrow, .rail-title svg, .resource-link, .lesson-pager button, .solution-toggle,
+  .accept-num, .acceptance-item svg, .play-table td:first-child, .acceptance-progress strong,
+  .attempt-history b, .course-path strong, .course-file-list code, .lesson-extra h3,
+  .lesson-index summary, .definition-copy strong, .application-copy strong
+) { color: var(--accent-text); }
+
+[data-theme="dark"] :is(.stat-icon, .continue-number, .module-art, .module-pill,
+  .level-pill, .step-heading span, .question-title span, .setting-icon, .settings-card code,
+  .bottom-note code, .section-file, .lesson-header-icon
+) {
+  background: var(--accent-surface);
+  color: var(--accent-text);
+}
+
+[data-theme="dark"] :is(.bottom-note, .course-path, .lesson-tips, .quiz-result, .play-table thead) {
+  background: var(--panel-raised);
+  border-color: var(--line);
+}
+
+[data-theme="dark"] :is(.mod-1, .bottom-note .bottom-icon) { background: #203d55; color: #9ed6ef; }
+[data-theme="dark"] .mod-4 { background: #392d55; color: #d8b7fb; }
+
+[data-theme="dark"] :is(
+  .mod-3, .mod-5, .level-pill.avanzado, .question-feedback.negative,
+  .result-number, .table-status.pending
+) { background: var(--warning-surface); color: var(--warning-text); }
+
+[data-theme="dark"] :is(
+  .mod-2, .level-pill.inicial, .insight, .task.checked, .quiz-option.correct,
+  .question-feedback.positive, .result-number.passed, .deliver-icon,
+  .table-status.resolved, .course-checkpoint, .play-note, .acceptance-item.achieved
+) {
+  background: var(--success-surface);
+  border-color: var(--success-border);
+  color: var(--success-text);
+}
+
+[data-theme="dark"] :is(
+  .summary-list svg, .insight svg, .insight p, .course-checkpoint p,
+  .quiz-option.correct .option-letter, .acceptance-item.achieved .accept-num,
+  .acceptance-item.achieved .accept-num svg
+) { color: var(--success-text); }
+
+[data-theme="dark"] :is(.quiz-option.wrong, .error-banner, .settings-card.danger .setting-icon) {
+  background: var(--danger-surface);
+  border-color: var(--danger-border);
+  color: var(--danger-text);
+}
+
+[data-theme="dark"] .quiz-option.wrong .option-letter {
+  border-color: var(--danger-border);
+  color: var(--danger-text);
+}
+
+[data-theme="dark"] .quiz-option.correct .option-letter { border-color: var(--success-border); }
+[data-theme="dark"] :is(.task.checked .task-checkbox, .rail-step span.complete) {
+  border-color: #57b58d;
+  color: #10251f;
+}
+
+[data-theme="dark"] .quiz-option.selected:not(:disabled) {
+  border-color: #7890df;
+  background: var(--accent-surface);
+  color: var(--accent-text);
+}
+
+[data-theme="dark"] .quiz-option:disabled { opacity: 1; }
+[data-theme="dark"] .progress-track { background: #34415e; }
+[data-theme="dark"] .env-dot { box-shadow: 0 0 0 3px #285345; }
+[data-theme="dark"] .intro-divider { color: var(--control-border); }
+[data-theme="dark"] .hero { box-shadow: var(--shadow); }
+[data-theme="dark"] .spinner { border-color: var(--line); border-top-color: var(--accent-text); }
+[data-theme="dark"] :is(.notes-card textarea, .play-control input, .glossary-filter input)::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+[data-theme="dark"] :is(.continue-card:hover, .module-card:hover) {
+  border-color: var(--control-border);
+  box-shadow: var(--shadow);
+}
+
+[data-theme="dark"] :is(.lesson-index-links button:hover, .lesson-index-links button:focus-visible,
+  .btn-outline:hover, .acceptance-item:not(.achieved):hover, .theme-toggle:hover, .table-pager button:not(:disabled):hover
+) {
+  background: var(--accent-surface);
+  border-color: var(--control-border);
+}

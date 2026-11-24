@@ -5,8 +5,8 @@ import {
   ArrowLeft, ArrowRight, Award, BookOpen, BookmarkCheck, Check, CheckCircle2, ChevronDown,
   ChevronRight, Circle, ClipboardList, Clock3, Code2, Copy, Database, Download,
   ExternalLink, FileCode2, Filter, GraduationCap, Layers3, LayoutDashboard, Lightbulb,
-  Menu, MessageSquareText, PanelLeftClose, PlayCircle, RotateCcw, Search, Settings2,
-  ShieldCheck, Sparkles, Terminal, Trophy, Upload, X, Zap, type LucideIcon
+  Menu, MessageSquareText, Moon, PanelLeftClose, PlayCircle, RotateCcw, Search, Settings2,
+  ShieldCheck, Sparkles, Sun, Terminal, Trophy, Upload, X, Zap, type LucideIcon
 } from "lucide-react";
 import { lessons, modules, capstone, totalQuestions } from "@/lib/course";
 import type { AppState, Lesson, LessonStatus } from "@/lib/types";
@@ -65,6 +65,32 @@ function getHashView():View {
 function LessonTag({lesson}:{lesson:Lesson}){return <span className={`level-pill ${lesson.level.toLowerCase()}`}>{lesson.level}</span>}
 function FlowTiny(){return <div className="flow-tiny"><span><Code2 size={16}/> ASP.NET</span><ChevronRight size={15}/><span><Layers3 size={16}/> EF Core</span><ChevronRight size={15}/><span><Database size={16}/> PostgreSQL</span></div>}
 function SummaryList({items}:{items:string[]}){return <ul className="summary-list">{items.map((item,i)=><li key={i}><CheckCircle2 size={16}/>{item}</li>)}</ul>}
+
+function ThemeToggle() {
+  const [dark, setDark] = useState(true);
+
+  useEffect(() => {
+    setDark(document.documentElement.dataset.theme === "dark");
+  }, []);
+
+  function toggleTheme() {
+    const theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = theme;
+    setDark(theme === "dark");
+    try {
+      localStorage.setItem("dotnet-atlas-theme", theme);
+    } catch {
+      // The theme still applies when browser storage is unavailable.
+    }
+  }
+
+  return (
+    <button type="button" className="theme-toggle" aria-label="Modo oscuro" aria-pressed={dark}
+      title={dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"} onClick={toggleTheme}>
+      {dark ? <Moon size={16} aria-hidden="true" /> : <Sun size={16} aria-hidden="true" />}
+    </button>
+  );
+}
 
 export default function Academy(){
   const [view,setView]=useState<View>({screen:"home"});
@@ -188,7 +214,7 @@ export default function Academy(){
     </aside>
 
     <div className="main-area">
-      <header className="topbar"><div className="topbar-left"><button className="menu-button" onClick={()=>setSidebar(v=>!v)} aria-label="Abrir menú"><Menu size={20}/></button><span className="crumb">FORMACIÓN / <strong>{view.screen==="home"?"Panel principal":view.screen==="lesson"?`CLASE ${current?.number??""}`:view.screen==="capstone"?"PROYECTO FINAL":view.screen==="glossary"?"GLOSARIO":view.screen==="playground"?"LABORATORIO":"CONFIGURACIÓN"}</strong></span></div><div className="topbar-right"><span className="env-pill"><span className="env-dot"/> modo local</span><span className="db-pill"><Database size={13}/> SQLite · progreso</span></div></header>
+      <header className="topbar"><div className="topbar-left"><button className="menu-button" onClick={()=>setSidebar(v=>!v)} aria-label="Abrir menú"><Menu size={20}/></button><span className="crumb">FORMACIÓN / <strong>{view.screen==="home"?"Panel principal":view.screen==="lesson"?`CLASE ${current?.number??""}`:view.screen==="capstone"?"PROYECTO FINAL":view.screen==="glossary"?"GLOSARIO":view.screen==="playground"?"LABORATORIO":"CONFIGURACIÓN"}</strong></span></div><div className="topbar-right"><span className="env-pill"><span className="env-dot"/> modo local</span><span className="db-pill"><Database size={13}/> SQLite · progreso</span><ThemeToggle/></div></header>
       {error&&<div className="error-banner"><span>{error}</span><button onClick={()=>setError(null)}><X size={16}/></button></div>}
       {loading?<div className="loading"><div className="spinner"/> Cargando tu progreso...</div>:
         <main className="content">
